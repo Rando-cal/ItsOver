@@ -9,6 +9,7 @@ Instructions: You can play by yourself or with another person.
 To aim use:
 
 A , D , Left Arrow, Right Arrow : adjusts angle of fire
+
 W,  S , Up Arrow,   Down Arrow: adjusts power of fire
 
 Select a weapon at the top. Then hit FIRE!
