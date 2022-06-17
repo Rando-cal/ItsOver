@@ -76,3 +76,4 @@ Potential Obstacles:
 - Weapon physics / trajectory physics
 - Mobile vs physical keyboard
 
+![](img/image0.jpeg)
