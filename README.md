@@ -77,3 +77,4 @@ Potential Obstacles:
 - Mobile vs physical keyboard
 
 ![](img/image0.jpeg)
+![](img/image1.jpeg)
