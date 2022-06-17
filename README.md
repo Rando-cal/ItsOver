@@ -14,7 +14,7 @@ W,  S , Up Arrow,   Down Arrow: adjusts power of fire
 
 Select a weapon at the top. Then hit FIRE!
 
-When your enemy is destroyed. You win!
+Destroy you enemy before they destroy you. IT'S OVER!
 
 
 
