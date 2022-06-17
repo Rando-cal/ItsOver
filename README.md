@@ -2,7 +2,7 @@
 
 Randy D'Abbraccio June 2022
 
-Welcome to ItsOver, a game of bombs, backgrounds, and the dread of armageddon. This is simple game of destroying your enemy before they destroy you.
+Welcome to ItsOver, a game of bombs, backgrounds, and the dread of armageddon. This is a  simple game of destroying your enemy before they destroy you.
 
 Instructions: You can play by yourself or with another person. To aim use:
 
