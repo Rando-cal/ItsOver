@@ -1,0 +1,60 @@
+html,body {
+    margin: 0;
+    padding: 0;
+}
+
+
+body {
+    padding-top: 1em;
+    text-align: center;
+    background-color: black;
+    /* background-image: url('../img/dungeonhell.png'); */
+    background-size: cover;
+    background-repeat: space;
+}
+
+
+#topBar{
+
+}
+
+.weaponClass{
+    grid-area: top-right;
+}
+
+#container {
+    max-width: 50em;
+    /* height: 70vh; */
+    background-color: blue;
+    margin: 0 auto;
+    padding: 1em;
+    display: grid;
+    grid-gap: 1em;
+    grid-template-rows: .25fr .5fr .25fr;
+    grid-template-columns: .25fr .5fr .25fr;
+    grid-template-areas: "top-left top top-right"
+                          "game game game"
+                          "btm-left bottom btm-right";
+    
+
+}
+
+canvas{
+    background-color: rgb(175, 121, 121);
+    width: 500px;
+    height: 500px;
+}
+
+#bottomBar{
+    grid-area: foot;
+
+}
+
+#startButton{
+    grid-area: bottom-left;
+    
+}
+
+main {
+    grid-area: game;
+  }

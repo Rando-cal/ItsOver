@@ -10,7 +10,7 @@ To aim use:
 
 A , D , Left Arrow, Right Arrow : adjusts angle of fire
 
-W,  S , Up Arrow,   Down Arrow: adjusts power of fire
+W,  S , Up Arrow,   Down Arrow:   adjusts power of fire
 
 Select a weapon at the top. Then hit FIRE!
 
@@ -54,9 +54,9 @@ Layout:
 
 
 Themes:
-- Dark humor of end of world
+- Dark humor of with end of the world
 - 8-bit simple graphics
-- Digital vs waterclor aspects
+- Digital vs watercolor aspects
 
 Wants: 
 - Additional weapon types
