@@ -14,15 +14,34 @@ const downloadToFile = (content, filename, contentType) => {
       URL.revokeObjectURL(a.href);
   };
 
+//   let text = 'the data to read out'
+      
+//   downloadToFile(text, 'my-new-file.txt', 'text/plain');
+
+//#####################################################
+
+
+
+
+
+
+//####################
+
+var iterator = 0
+
+
+// @50 milisecond loop, there are 20 repeating loops in a second. So around 20 frames per second
+let frameLength = 75
 
 
 // set it to html settings... in px
 var canvasH = 500
 var canvasW = 500
 
+
 // setting gravity constant
 const G = 9.8 
-// @50 milisecond loop, there are 20 repeating loops in a second. So around 20 frames per second
+
 
 // takes in 2 string x,y get array[x,y]
 const twoByStrToArray = (num1,num2) => {
@@ -81,6 +100,12 @@ const realXYToCanvasXY = (realX,realY) => {
     return [realX, canvasY]
 }
 
+const realYToCanvasX = (realY) => {
+    const canvasY = canvasH -realY
+    return [canvasY]
+}
+
+
 const realOrigin = [0,0]
 const canvasOrigin = [0,500]
 
@@ -94,21 +119,21 @@ const parabolicFunction = (realX,realY,angle,power, height1) => {
 
     let horizontalVelocity = power * (Math.cos(radians))
     let verticalVelocity = power * (Math.sin(radians))
-    let flightTimeNoHeight = (2 * verticalVelocity / G) * -1
-    let flightTime = ((verticalVelocity + Math.sqrt(Math.pow(verticalVelocity,2) + 2 * G * height)) / G) *-1
-    let rangeNoHeight = (2 * horizontalVelocity * verticalVelocity / G) * -1
-    let range = (horizontalVelocity * (verticalVelocity + Math.sqrt(Math.pow(verticalVelocity,2) + 2 * G * height)) / G) * -1
-    let maxHeightNoHeight = (Math.pow(verticalVelocity,2) / (2 * G)) * -1
-    let maxHeight = (height + Math.pow(verticalVelocity,2) / (2 * G))  * -1
+    let flightTimeNoHeight = (2 * verticalVelocity / G) 
+    let flightTime = ((verticalVelocity + Math.sqrt(Math.pow(verticalVelocity,2) + 2 * G * height)) / G)
+    let rangeNoHeight = (2 * horizontalVelocity * verticalVelocity / G)
+    let range = (horizontalVelocity * (verticalVelocity + Math.sqrt(Math.pow(verticalVelocity,2) + 2 * G * height)) / G)
+    let maxHeightNoHeight = (Math.pow(verticalVelocity,2) / (2 * G))
+    let maxHeight = (height + Math.pow(verticalVelocity,2) / (2 * G))
 
-    return [R(horizontalVelocity), 
-            R(verticalVelocity),
-            R(flightTimeNoHeight),
-            R(flightTime), 
-            R(rangeNoHeight), 
-            R(range), 
-            R(maxHeightNoHeight), 
-            R(maxHeight)]
+    return [R(horizontalVelocity),  //[0]
+            R(verticalVelocity),    //[1]
+            R(flightTimeNoHeight),  //[2]
+            R(flightTime),          //[3]
+            R(rangeNoHeight),       //[4]
+            R(range),               //[5]
+            R(maxHeightNoHeight),   //[6]
+            R(maxHeight)]           //[7]
 }
 
 
@@ -129,23 +154,22 @@ const angleToRadians = (angle) =>{
     return rads
 }
 
-testArry = []
-for (let i = 0; i < 20; i++){
-    testArry.push(getY(45,100,i,0,0))
+
+const makeBulTrajArray = (angle, power) => {
+    const bulletTrajArrayX = []
+    const bulletTrajArrayY = []
+        
+    let para = parabolicFunction(0,0,angle,power,0)
+    let totalTime = para[3]
+    const trajectoryFrames = totalTime / .1 // split up the lengtho of airtime / will change with hangtime / NOt what I want
+    for (let i = 0; i < trajectoryFrames; i++){
+        bulletTrajArrayX.push(getX(angle,power,i,0,0))
+        bulletTrajArrayY.push(getY(angle,power,i,0,0))
+    }
+    
+    return [bulletTrajArrayX,bulletTrajArrayY]
+    
 }
-
-downloadToFile(testArry, 'my-new-file.txt', 'text/plain');
-
-
-// horizontal velocity = velocity * cos(angle)
-// vertical velocity = velocity * sin(angle)
-// flight time = [Vy + √(Vy² + 2 * g * h)] / g
-
-// range = Vx * [Vy + √(Vy² + 2 * g * h)] / g
-// max height = h + Vy² / (2 * g)
-
-
-
 
 ///######################################################
 
@@ -157,9 +181,6 @@ const ctx = game.getContext('2d')
 
 game.setAttribute('width',getComputedStyle(game)['width'])
 game.setAttribute('height',getComputedStyle(game)['height'])
-
-
-
 
 
 class ItsOverEntity {
@@ -194,6 +215,16 @@ let bullet1 = new ItsOverEntity(0, 470, 'white', 5, 5)
 let tank1 = new ItsOverEntity(0, 450, 'green', 16, 16)
 let tank2 = new ItsOverEntity(400, 420, 'red', 32, 48)
 
+// GONNa try to have a bullet take a shoot path below ******************************
+
+let bulletTraj1 = makeBulTrajArray(54,67)
+for (let i = 0; i < bulletTraj1[0].length; i++){
+    bullet1.x = bulletTraj1[0][i]
+    bullet1.y = bulletTraj1[1][i]
+
+}
+
+
 
 
 
@@ -217,10 +248,18 @@ const gameLoop = () => {
         if (tank2.show) {
             tank2.render()   //  you don't it to detecthit() when its dead
         }
-
-
-
+    
+ 
+    if (iterator > 150){
+        console.log('stopped');
+    } else { bullet1.x = bulletTraj1[0][iterator]
+        bullet1.y = realYToCanvasX(bulletTraj1[1][iterator])
+        console.log(iterator);
+        iterator++}
     }
+
+
+
 
 
 
@@ -235,7 +274,7 @@ document.addEventListener('keydown',movementHandler) // FINSH*******
 
     // need game loop running at an interval
 
-    setInterval(gameLoop, 50)
+    setInterval(gameLoop, frameLength)
 })
 
 
@@ -278,11 +317,12 @@ const movementHandler = (e) => {
 }
 
 
-const bulletTravel = (angle, power, time) => {
-    let x = power * Math.cos(Math.PI / 180 * angle) * time
-    return x
-    
-}
+
+
+
+
+
+
 
 const detectHit = () => {
     // use 1 big IF statment
