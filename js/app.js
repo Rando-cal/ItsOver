@@ -3,12 +3,26 @@
 // TEST THE CONVERSIONS
 
 
+const downloadToFile = (content, filename, contentType) => {
+    const a = document.createElement('a');
+    const file = new Blob([content], {type: contentType});
+    
+    a.href= URL.createObjectURL(file);
+    a.download = filename;
+    a.click();
+  
+      URL.revokeObjectURL(a.href);
+  };
+
+
+
 // set it to html settings... in px
 var canvasH = 500
 var canvasW = 500
 
-
-
+// setting gravity constant
+const G = 9.8 
+// @50 milisecond loop, there are 20 repeating loops in a second. So around 20 frames per second
 
 // takes in 2 string x,y get array[x,y]
 const twoByStrToArray = (num1,num2) => {
@@ -74,18 +88,18 @@ const canvasOrigin = [0,500]
 const parabolicFunction = (realX,realY,angle,power, height1) => {
     // these are in meters
 
-    let g = -9.8
-    let height = 0
+    
+    let height = 0  // HAVE TO FIX THIS for terrain
     let radians = angle * Math.PI / 180
 
     let horizontalVelocity = power * (Math.cos(radians))
     let verticalVelocity = power * (Math.sin(radians))
-    let flightTimeNoHeight = (2 * verticalVelocity / g) * -1
-    let flightTime = ((verticalVelocity + Math.sqrt(Math.pow(verticalVelocity,2) + 2 * g * height)) / g) *-1
-    let rangeNoHeight = (2 * horizontalVelocity * verticalVelocity / g) * -1
-    let range = (horizontalVelocity * (verticalVelocity + Math.sqrt(Math.pow(verticalVelocity,2) + 2 * g * height)) / g) * -1
-    let maxHeightNoHeight = (Math.pow(verticalVelocity,2) / (2 * g)) * -1
-    let maxHeight = (height + Math.pow(verticalVelocity,2) / (2 * g))  * -1
+    let flightTimeNoHeight = (2 * verticalVelocity / G) * -1
+    let flightTime = ((verticalVelocity + Math.sqrt(Math.pow(verticalVelocity,2) + 2 * G * height)) / G) *-1
+    let rangeNoHeight = (2 * horizontalVelocity * verticalVelocity / G) * -1
+    let range = (horizontalVelocity * (verticalVelocity + Math.sqrt(Math.pow(verticalVelocity,2) + 2 * G * height)) / G) * -1
+    let maxHeightNoHeight = (Math.pow(verticalVelocity,2) / (2 * G)) * -1
+    let maxHeight = (height + Math.pow(verticalVelocity,2) / (2 * G))  * -1
 
     return [R(horizontalVelocity), 
             R(verticalVelocity),
@@ -97,7 +111,30 @@ const parabolicFunction = (realX,realY,angle,power, height1) => {
             R(maxHeight)]
 }
 
-console.log(parabolicFunction(0,0,45,30))
+
+// give x coordinate given a time and velocity
+const getX = (angle, power, newtime, timeInit, Xinit,) => {
+    let x = Xinit + power * (newtime - timeInit) * Math.cos(angleToRadians(angle))
+    return x
+}
+
+const getY = (angle, power, newtime, timeInit, Yinit,) => {
+    let x = Yinit + power * (newtime - timeInit) * Math.sin(angleToRadians(angle)) - .5 * G * (Math.pow((newtime - timeInit),2))
+    return x
+}
+
+
+const angleToRadians = (angle) =>{
+   let rads = angle * Math.PI / 180
+    return rads
+}
+
+testArry = []
+for (let i = 0; i < 20; i++){
+    testArry.push(getY(45,100,i,0,0))
+}
+
+downloadToFile(testArry, 'my-new-file.txt', 'text/plain');
 
 
 // horizontal velocity = velocity * cos(angle)
@@ -153,9 +190,10 @@ class ItsOverEntity {
     }
 }
 
-let tank1 = new ItsOverEntity(10, 470, 'green', 16, 16)
+let bullet1 = new ItsOverEntity(0, 470, 'white', 5, 5)
+let tank1 = new ItsOverEntity(0, 450, 'green', 16, 16)
 let tank2 = new ItsOverEntity(400, 420, 'red', 32, 48)
-let bullet1 = new ItsOverEntity(50, 50, 'white', 5, 5)
+
 
 
 
@@ -184,6 +222,9 @@ const gameLoop = () => {
 
     }
 
+
+
+
 // using setInerval to repear our game loop function at specific times
 
 // we're going to do this when the content loads
@@ -194,7 +235,7 @@ document.addEventListener('keydown',movementHandler) // FINSH*******
 
     // need game loop running at an interval
 
-    setInterval(gameLoop, 60)
+    setInterval(gameLoop, 50)
 })
 
 
@@ -237,6 +278,12 @@ const movementHandler = (e) => {
 }
 
 
+const bulletTravel = (angle, power, time) => {
+    let x = power * Math.cos(Math.PI / 180 * angle) * time
+    return x
+    
+}
+
 const detectHit = () => {
     // use 1 big IF statment
     // use x,y,width, height of our objects
@@ -254,5 +301,13 @@ const detectHit = () => {
 }
 
 
+const fireButtonGrab = document.getElementById('fire')
+
+fireButtonGrab.addEventListener('click',movementHandler)
+
+const bulletAnimation = (bulletObj, initTime, angle, power) => {
+    let para = parabolicFunction(bulletObj)
+
+}
 
 
