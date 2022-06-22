@@ -29,19 +29,18 @@ body {
     margin: 0 auto;
     padding: 1em;
     display: grid;
-    grid-gap: 1em;
-    grid-template-rows: .25fr .5fr .25fr;
-    grid-template-columns: .25fr .5fr .25fr;
-    grid-template-areas: "top-left top top-right"
-                          "game game game"
-                          "btm-left bottom btm-right";
-    
+    grid-gap: .5em;
+    grid-template-rows: 10% 10% 10% 10% 10% 10% 10% 10% 10% 10% 10%;
+    grid-template-columns: 25% 25% 25% 25%;
 
 }
 
 canvas{
-    background-color: rgb(175, 121, 121);
-    width: 500px;
+    background-color: rgb(141, 42, 111);
+    position: absolute;
+    top: 20%;
+    left: 17%;
+    width: 700px;
     height: 500px;
 }
 
@@ -51,10 +50,14 @@ canvas{
 }
 
 #startButton{
-    grid-area: bottom-left;
+    grid-area: btm-left;
     
 }
 
 main {
     grid-area: game;
-  }
+}
+
+.meter{
+    color: white;
+}

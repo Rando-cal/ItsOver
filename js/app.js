@@ -1,21 +1,55 @@
+// Need Functions:
+// tank explosion / coloring change
+// ground explosion
+// turret motion
+// End game state
+// 180 degree motion limit on turret
+// muzzle blast
+// stop clock
+// tank placement
+// tank movement?
+// background changer
+
+
+
+// Variables needed:
+// tank muzzle origin / tracker / setter
+// angle
+// power
+// player it is
+// health
+// tank origin
+// muzzle origin
+// 
+
+// Other needed:
+// wash backgrounds/
+// fire sounds
+// turret motion sounds
+// explsion sound
+// 
+
+
+// Broken:
+// Angle and power go up and down but don't display every key press
+
+
 /// HELPER FUNCTIONS
 
 // TEST THE CONVERSIONS
 
-
+//testing
 const downloadToFile = (content, filename, contentType) => {
     const a = document.createElement('a');
-    const file = new Blob([content], {type: contentType});
+    const file = new Blob([content], {type: contentType})
     
-    a.href= URL.createObjectURL(file);
+    a.href= URL.createObjectURL(file)
     a.download = filename;
     a.click();
-  
-      URL.revokeObjectURL(a.href);
-  };
 
+    URL.revokeObjectURL(a.href)
+}
 //   let text = 'the data to read out'
-      
 //   downloadToFile(text, 'my-new-file.txt', 'text/plain');
 
 //#####################################################
@@ -27,11 +61,23 @@ const downloadToFile = (content, filename, contentType) => {
 
 //####################
 
-var iterator = 0
+
+
+
+
+// false is player2
+let Gplayer1Turn = true 
+
+var GlobalIterator = 0
+
+var isCurrentTurnOverG = false
+
+let displayAngle = 45
+let displayPower = 44
 
 
 // @50 milisecond loop, there are 20 repeating loops in a second. So around 20 frames per second
-let frameLength = 75
+let frameLength = 65
 
 
 // set it to html settings... in px
@@ -41,6 +87,10 @@ var canvasW = 500
 
 // setting gravity constant
 const G = 9.8 
+
+
+const realOrigin = [0,0]
+const canvasOrigin = [0,500]
 
 
 // takes in 2 string x,y get array[x,y]
@@ -105,9 +155,18 @@ const realYToCanvasX = (realY) => {
     return [canvasY]
 }
 
+// sets the display angle
+const showAngle = () => {
+    angleDisplayGrab.innerText = `Angle: ${displayAngle}`
+}
 
-const realOrigin = [0,0]
-const canvasOrigin = [0,500]
+// sets the display power
+const showPower = () => {
+    powerDisplayGrab.innerText = `Power: ${displayPower}`
+}
+
+
+
 
 // power 0 to 100 , can add height, in METERS. I"ll need a factor to bring numbers down. Like top power is 30 meters/s...
 const parabolicFunction = (realX,realY,angle,power, height1) => {
@@ -148,7 +207,6 @@ const getY = (angle, power, newtime, timeInit, Yinit,) => {
     return x
 }
 
-
 const angleToRadians = (angle) =>{
    let rads = angle * Math.PI / 180
     return rads
@@ -158,7 +216,7 @@ const angleToRadians = (angle) =>{
 const makeBulTrajArray = (angle, power) => {
     const bulletTrajArrayX = []
     const bulletTrajArrayY = []
-        
+
     let para = parabolicFunction(0,0,angle,power,0)
     let totalTime = para[3]
     const trajectoryFrames = totalTime / .1 // split up the lengtho of airtime / will change with hangtime / NOt what I want
@@ -172,10 +230,11 @@ const makeBulTrajArray = (angle, power) => {
 }
 
 ///######################################################
-
+//
 
 const game = document.getElementById('canvas')
-const movement = document.getElementById('movement')
+const angleDisplayGrab = document.getElementById('angle')
+const powerDisplayGrab = document.getElementById('power')
 
 const ctx = game.getContext('2d')
 
@@ -186,19 +245,17 @@ game.setAttribute('height',getComputedStyle(game)['height'])
 class ItsOverEntity {
 
     // attributes that are variable, go in the constructor function
-    constructor(x, y, color, width, height) {
+    constructor(x, y, color, width, height, angle, power, show) {
 
         // define here: what the object will be made of
-        this.x = x,
-        // this.x = 0 , all crawlers would have x of 0
-    
+        this.x = x,    
         this.y = y,
         this.color = color,
         this.width = width,
         this.height = height,
-        
-
-        this.show = true,
+        this.angle = angle,
+        this. power = power, 
+        this.show = false,
 
         // we can also add methods
         // here our method will be render
@@ -211,23 +268,21 @@ class ItsOverEntity {
     }
 }
 
-let bullet1 = new ItsOverEntity(0, 470, 'white', 5, 5)
-let tank1 = new ItsOverEntity(0, 450, 'green', 16, 16)
+let bullet1 = new ItsOverEntity(0, 470, 'white', 5, 5, 72, 90, false)  // ideally these values will come from the player and tanks settings
+let tank1 = new ItsOverEntity(0, 450, 'green', 16, 16, 80, 50, true)
 let tank2 = new ItsOverEntity(400, 420, 'red', 32, 48)
 
-// GONNa try to have a bullet take a shoot path below ******************************
+// GONNa try to have a bullet take a shoot path below 
 
-let bulletTraj1 = makeBulTrajArray(54,67)
+let bulletTraj1 = makeBulTrajArray(bullet1.angle,bullet1.power)
 for (let i = 0; i < bulletTraj1[0].length; i++){
     bullet1.x = bulletTraj1[0][i]
     bullet1.y = bulletTraj1[1][i]
-
 }
 
 
-
-
-
+//##############################################################################################################
+//#############################vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv#################################################
 const gameLoop = () => {
 
     if (tank2.show) {
@@ -239,26 +294,28 @@ const gameLoop = () => {
 
 
     
+    
     ctx.clearRect(0,0,game.width,game.height)
 
-    bullet1.render()
-    // movement.textContent = tank1.x + ', ' + tank1.y
+    if (bullet1.show === true) {
+        if (GlobalIterator > 150){
+            console.log('stopped');
+        } else { bullet1.x = bulletTraj1[0][GlobalIterator]
+            bullet1.y = realYToCanvasX(bulletTraj1[1][GlobalIterator])
+            console.log(GlobalIterator);
+            GlobalIterator++}
+
+        bullet1.render()
+    }    
+    
+
     tank1.render()
 
         if (tank2.show) {
             tank2.render()   //  you don't it to detecthit() when its dead
         }
-    
- 
-    if (iterator > 150){
-        console.log('stopped');
-    } else { bullet1.x = bulletTraj1[0][iterator]
-        bullet1.y = realYToCanvasX(bulletTraj1[1][iterator])
-        console.log(iterator);
-        iterator++}
+        
     }
-
-
 
 
 
@@ -272,10 +329,15 @@ document.addEventListener('DOMContentLoaded' , function () {
 document.addEventListener('keydown',movementHandler) // FINSH*******
 
 
-    // need game loop running at an interval
 
-    setInterval(gameLoop, frameLength)
+
+    let clearID = setInterval(gameLoop, frameLength)
 })
+
+
+
+//#############################^^^^^^^^^^^^^^^^^^^^^^^##########################################################
+//##############################################################################################################
 
 
 // this funt is ogint o be how we move our tank around
@@ -286,42 +348,43 @@ const movementHandler = (e) => {
     switch (e.keyCode) {
         case (87):
         case (38):  // CASCADE to get it to work with other keys
-            // moves the tank up
-            tank1.y -= 10
+            // adjusts tank cannon vel
 
-            // need break
+            if (displayPower > 100){
+                displayPower = 100
+            }
+            displayPower += 1
+
+            // needs break
             break
         
         case (65):
         case (37):
 
-            // this move P left
-            tank1.x -= 10
+            // deacreases angle
+            if (displayAngle <=0 ){   // limits the angle to 180deg
+                displayAngle = 0
+            } else (displayAngle -= 1)
+            
             break 
 
         case (83):
         case (40):    
-            // move tank1 down
-            tank1.y += 10
+            // decreases the power
+            displayPower -= 1 
             break
 
         case (68):
         case (39):    
-            // this moves the tank1 to the right
-            tank1.x += 10
+            // this increases the angle
+            if (displayAngle >= 180){   // limits the angle to 180deg
+                displayAngle =180
+            } else (displayAngle += 1)
+            
             break
-
-
     }
 
 }
-
-
-
-
-
-
-
 
 
 const detectHit = () => {
@@ -341,13 +404,39 @@ const detectHit = () => {
 }
 
 
-const fireButtonGrab = document.getElementById('fire')
+const fireIt = () => {
+    playerChanger()
+    // create a bullet array
+    // grab the projectile values
+    // pass the array of bullet traj
+    // update the show value
+    // show it 
 
-fireButtonGrab.addEventListener('click',movementHandler)
+    bullet1.show = true
+}
+
+const fireButtonGrab = document.getElementById('fire')
+fireButtonGrab.addEventListener('click',fireIt)
+
 
 const bulletAnimation = (bulletObj, initTime, angle, power) => {
     let para = parabolicFunction(bulletObj)
-
 }
 
 
+const playerChanger = () => {
+    const pT = document.getElementById('playerTurn')
+    
+    if (Gplayer1Turn === true) {
+        pT.innerText = "Player 2's Turn"
+        Gplayer1Turn = false
+
+    } else {Gplayer1Turn = true
+        pT.innerText = "Player 1's Turn"
+    }
+}
+
+
+
+const w3ButtonGrab = document.getElementById('weapon3button')
+w3ButtonGrab.addEventListener('click',showAngle)
