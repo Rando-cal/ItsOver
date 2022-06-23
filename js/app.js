@@ -73,10 +73,11 @@ var GlobalIterator = 0
 var isCurrentTurnOverG = false
 
 let displayAngle = 45
-let displayPower = 44
+let displayPower = 90
 
 
 // @50 milisecond loop, there are 20 repeating loops in a second. So around 20 frames per second
+// 65 appears to be a good balance
 let frameLength = 65
 
 
@@ -150,8 +151,8 @@ const realXYToCanvasXY = (realX,realY) => {
     return [realX, canvasY]
 }
 
-const realYToCanvasX = (realY) => {
-    const canvasY = canvasH -realY
+const realYToCanvasY = (realYnum) => {
+    const canvasY = canvasH -realYnum
     return [canvasY]
 }
 
@@ -268,17 +269,20 @@ class ItsOverEntity {
     }
 }
 
-let bullet1 = new ItsOverEntity(0, 470, 'white', 5, 5, 72, 90, false)  // ideally these values will come from the player and tanks settings
+let bullet = new ItsOverEntity(0, 470, 'white', 5, 5, 72, 90, false)  // ideally these values will come from the player and tanks settings
 let tank1 = new ItsOverEntity(0, 450, 'green', 16, 16, 80, 50, true)
 let tank2 = new ItsOverEntity(400, 420, 'red', 32, 48)
 
+
+tank2.render()
+
 // GONNa try to have a bullet take a shoot path below 
 
-let bulletTraj1 = makeBulTrajArray(bullet1.angle,bullet1.power)
-for (let i = 0; i < bulletTraj1[0].length; i++){
-    bullet1.x = bulletTraj1[0][i]
-    bullet1.y = bulletTraj1[1][i]
-}
+// let bulletTraj1 = makeBulTrajArray(bullet1.angle,bullet1.power)
+// for (let i = 0; i < bulletTraj1[0].length; i++){
+//     bullet1.x = bulletTraj1[0][i]
+//     bullet1.y = bulletTraj1[1][i]
+// }
 
 
 //##############################################################################################################
@@ -297,25 +301,32 @@ const gameLoop = () => {
     
     ctx.clearRect(0,0,game.width,game.height)
 
-    if (bullet1.show === true) {
-        if (GlobalIterator > 150){
-            console.log('stopped');
-        } else { bullet1.x = bulletTraj1[0][GlobalIterator]
-            bullet1.y = realYToCanvasX(bulletTraj1[1][GlobalIterator])
-            console.log(GlobalIterator);
-            GlobalIterator++}
+    // if (bullet1.show === true) {
+    //     if (GlobalIterator > 150){
+    //         console.log('stopped');
+    //     } else { bullet1.x = bulletTraj1[0][GlobalIterator]
+    //         bullet1.y = realYToCanvasX(bulletTraj1[1][GlobalIterator])
+    //         console.log(GlobalIterator);
+    //         GlobalIterator++}
 
-        bullet1.render()
-    }    
+    //     bullet1.render()
+    // }    
     
 
+
     tank1.render()
+
+    if (bullet.show) {
+        bullet.render()
+    } 
 
         if (tank2.show) {
             tank2.render()   //  you don't it to detecthit() when its dead
         }
         
     }
+
+
 
 
 
@@ -350,7 +361,7 @@ const movementHandler = (e) => {
         case (38):  // CASCADE to get it to work with other keys
             // adjusts tank cannon vel
 
-            if (displayPower > 100){
+            if (displayPower >= 100){
                 displayPower = 100
             }
             displayPower += 1
@@ -403,16 +414,50 @@ const detectHit = () => {
         }
 }
 
-
+// constructor(x, y, color, width, height, angle, power, show)
 const fireIt = () => {
-    playerChanger()
-    // create a bullet array
-    // grab the projectile values
-    // pass the array of bullet traj
-    // update the show value
-    // show it 
+    
+    let bulletTraj = makeBulTrajArray(bullet.angle, bullet.power)
+    
+    // have to fix hardcoding for parabolic inputs
+    let paraBolics = parabolicFunction(0,470,displayAngle,displayPower, 0)
+    let fltTime = paraBolics[3]
+    console.log(fltTime);
+    forLength = fltTime / frameLength
 
-    bullet1.show = true
+    function localSleep(ms) {
+        return new Promise(resolve => setTimeout(resolve, ms));
+    }
+    
+    async function localLoop() {
+            // console.log(bulletTraj[0].length)
+            for (let x = 0; x < forLength; x++){
+                console.log('inFOR LOOP')
+                let localIterator = 0    
+                bullet.x = bulletTraj[0][localIterator]
+                bullet.y = bulletTraj[1][localIterator]
+                bullet.show = true
+                localIterator++
+                console.log("localit:"+localIterator)
+
+            }
+            console.log('outsideloop')
+    }
+    
+    setTimeout(localLoop,frameLength);
+
+    // let clearID = setInterval(localLoop, frameLength)
+
+    // SOLUTION??? get length of time for shot and set SHOW.true for that length,
+    //  then turn it off....  OR its okay to stop the 'clock'
+    //          ADD ITS OWN CLOCK with render???
+
+
+    // approach - The Bullet is always there, it will get a new TRAJ values, and
+    //      render when needed
+
+
+    playerChanger()
 }
 
 const fireButtonGrab = document.getElementById('fire')
