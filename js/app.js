@@ -70,10 +70,13 @@ let Gplayer1Turn = true
 
 var GlobalIterator = 0
 
+let globalX = 0
+let globalY = 0
+
 var isCurrentTurnOverG = false
 
 let displayAngle = 45
-let displayPower = 90
+let displayPower = 30
 
 
 // @50 milisecond loop, there are 20 repeating loops in a second. So around 20 frames per second
@@ -81,7 +84,7 @@ let displayPower = 90
 let frameLength = 65
 
 
-// set it to html settings... in px
+// NEEDS: get from html settings... in px
 var canvasH = 500
 var canvasW = 500
 
@@ -92,6 +95,9 @@ const G = 9.8
 
 const realOrigin = [0,0]
 const canvasOrigin = [0,500]
+
+let player1 = 100
+let player2 = 100
 
 
 // takes in 2 string x,y get array[x,y]
@@ -141,13 +147,13 @@ const R = (numWithDec) => {
 
 // change canvas xy to normal x,y coordinates
 // so up will be +y, right +x. Run all co-ordindate throughit
-const canvasXYToRealXY = (canvasX,canvasY,canvasW,canvasH) => {
-    const realY = canvasH - canvasH
-    return [canvasX,realY]
+const canvasYToRealY = (canvasY,canvasH) => {
+    return canvasH - canvasY
 }
 
+
 const realXYToCanvasXY = (realX,realY) => {
-    const canvasY = canvasH -realY
+    const canvasY = canvasH - realY
     return [realX, canvasY]
 }
 
@@ -167,14 +173,24 @@ const showPower = () => {
 }
 
 
+const playerChanger = () => {
+    const pT = document.getElementById('playerTurn')
+    
+    if (Gplayer1Turn === true) {
+        pT.innerText = "Player 2's Turn"
+        Gplayer1Turn = false
+
+    } else {Gplayer1Turn = true
+        pT.innerText = "Player 1's Turn"
+    }
+}
+
 
 
 // power 0 to 100 , can add height, in METERS. I"ll need a factor to bring numbers down. Like top power is 30 meters/s...
-const parabolicFunction = (realX,realY,angle,power, height1) => {
-    // these are in meters
+const parabolicFunction = (realX,realY,angle,power, height) => {
+    // these are in meters    
 
-    
-    let height = 0  // HAVE TO FIX THIS for terrain
     let radians = angle * Math.PI / 180
 
     let horizontalVelocity = power * (Math.cos(radians))
@@ -214,24 +230,111 @@ const angleToRadians = (angle) =>{
 }
 
 
-const makeBulTrajArray = (angle, power) => {
+const makeBulTrajArray = (x,y,angle, power) => {
     const bulletTrajArrayX = []
     const bulletTrajArrayY = []
 
-    let para = parabolicFunction(0,0,angle,power,0)
+    let para = parabolicFunction(x,y,angle,power,0)
     let totalTime = para[3]
-    const trajectoryFrames = totalTime / .1 // split up the lengtho of airtime / will change with hangtime / NOt what I want
+    const trajectoryFrames = totalTime / .001 // split up the lengtho of airtime / will change with hangtime / NOt what I want
     for (let i = 0; i < trajectoryFrames; i++){
-        bulletTrajArrayX.push(getX(angle,power,i,0,0))
-        bulletTrajArrayY.push(getY(angle,power,i,0,0))
+        bulletTrajArrayX.push(getX(angle,power,i,0,x))
+        bulletTrajArrayY.push(getY(angle,power,i,0,y))
     }
     
     return [bulletTrajArrayX,bulletTrajArrayY]
     
 }
 
-///######################################################
-//
+const showPowAng = () => {
+    showAngle()
+    showPower()
+}
+
+const generateRand = (min,max) => {
+    let diff =  max - min
+    let rand = Math.random()
+    rand = Math.floor (rand * diff)
+    rand = rand + min
+    return rand
+}
+
+
+const tankPlacerX = () => {
+    let halfCanvas = canvasW / 2
+    let firstHalfCanvas = [0,halfCanvas]
+    let secondHalfCanvas = [halfCanvas,canvasW]
+    let position1 = generateRand(firstHalfCanvas[0],firstHalfCanvas[1])
+    let position2 = generateRand(secondHalfCanvas[0],secondHalfCanvas[1])
+    return [position1,position2]
+}
+
+    // SOLUTION??? get length of time for shot and set SHOW.true for that length,
+    //  then turn it off....  OR its okay to stop the 'clock'
+    //          ADD ITS OWN CLOCK with render???
+
+
+    // approach - The Bullet is always there, it will get a new TRAJ values, and
+    //      render when needed
+
+
+
+// constructor(x, y, color, width, height, angle, power, show)
+const fireIt = () => {
+
+    let localX = globalX
+    let localY = globalY
+    
+    // Step: erase prior parameters
+    let bulletTraj = makeBulTrajArray(tank1.x,tank1.y,tank1.angle, tank1.power)
+    
+    // have to fix hardcoding for parabolic inputs
+    let paraBolics = parabolicFunction(tank1.x,tank1.y,tank1.angle,tank1.power, tank1.y)
+
+    let fltTime = paraBolics[3]
+    console.log("fltTime:"+fltTime);
+    forLength = fltTime / (frameLength * .001)
+    console.log("forLength:" +forLength);
+
+    // LOOP KINDA WORKS. Have to stop it once its finished its fltTime
+    let localIterator = 0
+    let endLoop = false
+    
+    let timerID = undefined
+    console.log("timerID:"+timerID)    
+    
+    const localLoop = () => {
+    
+        // if (iterator >= forLength ){
+        //     clearInterval(timerID)
+        // }
+    
+        bullet.show = true 
+        bullet.x = bulletTraj[0][localIterator]
+        bullet.y = realYToCanvasY(bulletTraj[1][localIterator])
+        
+        localIterator++
+
+    }
+    
+    
+    const localClock = () => {
+        
+        let intervalID = setInterval(localLoop,frameLength)
+        console.log("intervalID:"+intervalID)
+    
+        timerID = intervalID
+        console.log("timerIDin:"+timerID)
+    }
+
+
+localClock()
+playerChanger()
+}
+
+
+///=========================================================================================
+// =========================================================================================
 
 const game = document.getElementById('canvas')
 const angleDisplayGrab = document.getElementById('angle')
@@ -256,7 +359,9 @@ class ItsOverEntity {
         this.height = height,
         this.angle = angle,
         this. power = power, 
-        this.show = false,
+        this.show = show,
+
+        this.health = 25
 
         // we can also add methods
         // here our method will be render
@@ -269,12 +374,24 @@ class ItsOverEntity {
     }
 }
 
-let bullet = new ItsOverEntity(0, 470, 'white', 5, 5, 72, 90, false)  // ideally these values will come from the player and tanks settings
-let tank1 = new ItsOverEntity(0, 450, 'green', 16, 16, 80, 50, true)
-let tank2 = new ItsOverEntity(400, 420, 'red', 32, 48)
 
 
-tank2.render()
+// SOMETHING FUNKY HERE!!!!
+//       constructor(x, y, color, width, height, angle, power, show)   
+  // ideally these values will come from the player and tanks settings
+let tank1 = new ItsOverEntity(tankPlacerX()[0], 450, 'green', 16, 10, displayAngle, displayPower, true)  //!! set bullet Y here IN CANVAS XY,not real
+    globalY = canvasYToRealY(tank1.y)
+    globalX = tank1.x
+
+
+let tank2 = new ItsOverEntity(tankPlacerX()[1], realYToCanvasY(20), 'red', 16, 10,40,70,true)
+let bullet = new ItsOverEntity(tank1.x, tank1.y, 'white', 5, 5, tank1.angle, tank1.power, false)
+
+
+
+
+
+
 
 // GONNa try to have a bullet take a shoot path below 
 
@@ -320,19 +437,14 @@ const gameLoop = () => {
         bullet.render()
     } 
 
-        if (tank2.show) {
-            tank2.render()   //  you don't it to detecthit() when its dead
-        }
-        
+    if (tank2.show) {
+        tank2.render()   //  you don't it to detecthit() when its dead
     }
 
 
+        
+    }
 
-
-
-
-
-// using setInerval to repear our game loop function at specific times
 
 // we're going to do this when the content loads
 document.addEventListener('DOMContentLoaded' , function () {
@@ -361,32 +473,37 @@ const movementHandler = (e) => {
         case (38):  // CASCADE to get it to work with other keys
             // adjusts tank cannon vel
 
-            if (displayPower >= 100){
-                displayPower = 100
+            if (displayPower >= 99){
+                displayPower = 99
             }
             displayPower += 1
 
             // needs break
             break
         
-        case (65):
-        case (37):
+
+            case (68):
+            case (39):  
+
 
             // deacreases angle
             if (displayAngle <=0 ){   // limits the angle to 180deg
                 displayAngle = 0
             } else (displayAngle -= 1)
-            
             break 
 
         case (83):
         case (40):    
             // decreases the power
+            if (displayPower < 1){
+                displayPower = 1
+            }
             displayPower -= 1 
             break
 
-        case (68):
-        case (39):    
+
+            case (65):
+            case (37):  
             // this increases the angle
             if (displayAngle >= 180){   // limits the angle to 180deg
                 displayAngle =180
@@ -402,86 +519,27 @@ const detectHit = () => {
     // use 1 big IF statment
     // use x,y,width, height of our objects
 
-    if (tank1.x < tank2.x + tank2.width
-        && tank1.x + tank1.width > tank2.x
-        && tank1.y < tank2.y + tank2.height
-        && tank1.y +  tank1.height > tank2.y){
+    if (bullet.x < tank2.x + tank2.width
+        && bullet.x + bullet.width > tank2.x
+        && bullet.y < bullet.y + tank2.height
+        && bullet.y +  bullet.height > tank2.y){
             // console.log('we have a hit') // testing
 
             // here see if hit happens
-            tank2.show = false
+            if ( tank2.health < 32){
+                tank2.show = false
+            } else{ tank2.health -= 33 }
+            
+            
 
         }
 }
 
-// constructor(x, y, color, width, height, angle, power, show)
-const fireIt = () => {
-    
-    let bulletTraj = makeBulTrajArray(bullet.angle, bullet.power)
-    
-    // have to fix hardcoding for parabolic inputs
-    let paraBolics = parabolicFunction(0,470,displayAngle,displayPower, 0)
-    let fltTime = paraBolics[3]
-    console.log(fltTime);
-    forLength = fltTime / frameLength
 
-    function localSleep(ms) {
-        return new Promise(resolve => setTimeout(resolve, ms));
-    }
-    
-    async function localLoop() {
-            // console.log(bulletTraj[0].length)
-            for (let x = 0; x < forLength; x++){
-                console.log('inFOR LOOP')
-                let localIterator = 0    
-                bullet.x = bulletTraj[0][localIterator]
-                bullet.y = bulletTraj[1][localIterator]
-                bullet.show = true
-                localIterator++
-                console.log("localit:"+localIterator)
-
-            }
-            console.log('outsideloop')
-    }
-    
-    setTimeout(localLoop,frameLength);
-
-    // let clearID = setInterval(localLoop, frameLength)
-
-    // SOLUTION??? get length of time for shot and set SHOW.true for that length,
-    //  then turn it off....  OR its okay to stop the 'clock'
-    //          ADD ITS OWN CLOCK with render???
-
-
-    // approach - The Bullet is always there, it will get a new TRAJ values, and
-    //      render when needed
-
-
-    playerChanger()
-}
 
 const fireButtonGrab = document.getElementById('fire')
 fireButtonGrab.addEventListener('click',fireIt)
 
 
-const bulletAnimation = (bulletObj, initTime, angle, power) => {
-    let para = parabolicFunction(bulletObj)
-}
-
-
-const playerChanger = () => {
-    const pT = document.getElementById('playerTurn')
-    
-    if (Gplayer1Turn === true) {
-        pT.innerText = "Player 2's Turn"
-        Gplayer1Turn = false
-
-    } else {Gplayer1Turn = true
-        pT.innerText = "Player 1's Turn"
-    }
-}
-
-
-
 const w3ButtonGrab = document.getElementById('weapon3button')
-w3ButtonGrab.addEventListener('click',showAngle)
+w3ButtonGrab.addEventListener('click',showPowAng)
