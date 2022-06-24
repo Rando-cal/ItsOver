@@ -2,25 +2,19 @@
 // tank explosion / coloring change
 // ground explosion
 // turret motion
-// End game state
+// End game state ***
 // 180 degree motion limit on turret
 // muzzle blast
 // stop clock
-// tank placement
 // tank movement?
 // background changer
+// minmal viable tank ***
 
 
 
 // Variables needed:
-// tank muzzle origin / tracker / setter
-// angle
-// power
-// player it is
-// health
-// tank origin
-// muzzle origin
-// 
+
+
 
 // Other needed:
 // wash backgrounds/
@@ -35,8 +29,6 @@
 
 
 /// HELPER FUNCTIONS
-
-// TEST THE CONVERSIONS
 
 //testing
 const downloadToFile = (content, filename, contentType) => {
@@ -92,13 +84,11 @@ let canvasW = 500
 // setting gravity constant
 const G = 9.8 
 
+let gameOverState = false
+
 
 const realOrigin = [0,0]
 const canvasOrigin = [0,500]
-
-let player1 = 100
-let player2 = 100
-
 
 // takes in 2 string x,y get array[x,y]
 const twoByStrToArray = (num1,num2) => {
@@ -230,6 +220,17 @@ const angleToRadians = (angle) =>{
     return rads
 }
 
+
+
+
+
+
+
+
+
+
+
+
 // this is not RETURN THE CORRECT Y VALUES
 const makeBulTrajArray = (x,y,angle, power) => {
 
@@ -286,204 +287,37 @@ const tankPlacerX = () => {
 
 
 
-// constructor(x, y, color, width, height, angle, power, show)
-const fireIt = () => {
+const detectHit = () => {
+    // use 1 big IF statment
+    // use x,y,width, height of our objects
 
-    // let localX = globalX
-    // let localY = globalY
+    if (bullet1.x < tank2.x + tank2.width
+        && bullet1.x + bullet1.width > tank2.x
+        && bullet1.y < bullet1.y + tank2.height
+        && bullet1.y +  bullet1.height > tank2.y){
+            // console.log('we have a hit') // testing
 
-    
-    console.log('IN FIRE!!!:canvasYToRealY(tank1.y)295:'+canvasYToRealY(tank1.y));
-    // Step: erase prior parameters
+            // here see if hit happens
+            if ( tank2.health < 32){
+                tank2.show = false
+            } else{ tank2.health -= 33 }
 
-    console.log("298:"+tank1.y)
+            window.alert("HIT!");
+            
+            
 
-    let bulletTraj = makeBulTrajArray(tank1.x,canvasYToRealY(tank1.y),tank1.angle, tank1.power)  // THIS IS NaNin' the Ys
-
-
-    // have to fix hardcoding for parabolic inputs
-    let paraBolics = parabolicFunction(tank1.x,canvasYToRealY(tank1.y),tank1.angle,tank1.power, canvasYToRealY(tank1.y))
-    console.log('IN FIRE!!!:canvasYToRealY(tank1.y):'+canvasYToRealY(tank1.y));
-
-    let fltTime = paraBolics[3]
-    console.log("fltTime:"+fltTime);
-    forLength = fltTime / (frameLength * .001)
-    console.log("forLength:" +forLength);
-
-    // LOOP KINDA WORKS. Have to stop it once its finished its fltTime
-    let localIterator = 0
-    let endLoop = false
-    
-    let timerID = undefined
-    console.log("timerID:"+timerID)    
-    
-    const localLoop = () => {
-    
-        // if (iterator >= forLength ){
-        //     clearInterval(timerID)
-        // }
-    
-        bullet.show = true 
-        bullet.x = bulletTraj[0][localIterator]
-        bullet.y = realYToCanvasY(bulletTraj[1][localIterator])
-        
-        localIterator++
-
-    }
-    
-    
-    const localClock = () => {
-        
-        let intervalID = setInterval(localLoop,frameLength)
-        console.log("intervalID:"+intervalID)
-    
-        timerID = intervalID
-        console.log("timerIDin:"+timerID)
-    }
-
-
-localClock()
-playerChanger()
-}
-
-
-///=========================================================================================
-
-
-const game = document.getElementById('canvas')
-const angleDisplayGrab = document.getElementById('angle')
-const powerDisplayGrab = document.getElementById('power')
-
-const ctx = game.getContext('2d')
-
-game.setAttribute('width',getComputedStyle(game)['width'])
-game.setAttribute('height',getComputedStyle(game)['height'])
-
-
-class ItsOverEntity {
-
-    // attributes that are variable, go in the constructor function
-    constructor(x, y, color, width, height, angle, power, show) {
-
-        // define here: what the object will be made of
-        this.x = x,    
-        this.y = y,  // HAS TO STORE AS CANVAS Y, then convert when needed
-        this.color = color,
-        this.width = width,
-        this.height = height,
-        this.angle = angle,
-        this. power = power, 
-        this.show = show,
-
-        this.health = 25
-
-        // we can also add methods
-        // here our method will be render
-        this.render = function() {
-            // here, we will se the fillstyle and the fillrect
-
-            ctx.fillStyle = this.color
-            ctx.fillRect(this.x, this.y, this.width, this.height)
         }
-    }
 }
 
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
 
 
-
-// SOMETHING FUNKY HERE!!!!
-//       constructor(x, y, color, width, height, angle, power, show)   
-// ideally these values will come from the player and tanks settings
-let tank1 = new ItsOverEntity(tankPlacerX()[0], realYToCanvasY(20), 'green', 16, 10, displayAngle, displayPower, true)  //!! set bullet Y here IN CANVAS XY,not real
-    // globalY = canvasYToRealY(tank1.y)
-    // globalX = tank1.x
-
-
-let tank2 = new ItsOverEntity(tankPlacerX()[1], realYToCanvasY(20), 'red', 16, 10,40,70,true)
-let bullet = new ItsOverEntity(tank1.x, tank1.y, 'white', 5, 5, tank1.angle, tank1.power, false)
-
-console.log("bullets:"+bullet.x,bullet.y);
-console.log(tank1.x);
-
-// GONNa try to have a bullet take a shoot path below 
-
-// let bulletTraj1 = makeBulTrajArray(bullet1.angle,bullet1.power)
-// for (let i = 0; i < bulletTraj1[0].length; i++){
-//     bullet1.x = bulletTraj1[0][i]
-//     bullet1.y = bulletTraj1[1][i]
-// }
-
-
-//##############################################################################################################
-//#############################vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv#################################################
-const gameLoop = () => {
-
-    if (tank2.show) {
-        detectHit()
-    }
-    // need to render both our objects and their respective methods
-    // need to update our movement with coords of tank
-    // to make movement, we need to clear the canvas every 'frame'
-
-
-    
-    
-    ctx.clearRect(0,0,game.width,game.height)
-
-    // if (bullet1.show === true) {
-    //     if (GlobalIterator > 150){
-    //         console.log('stopped');
-    //     } else { bullet1.x = bulletTraj1[0][GlobalIterator]
-    //         bullet1.y = realYToCanvasX(bulletTraj1[1][GlobalIterator])
-    //         console.log(GlobalIterator);
-    //         GlobalIterator++}
-
-    //     bullet1.render()
-    // }    
-    
-
-
-    tank1.render()
-
-    if (bullet.show) {
-        bullet.render()
-    } 
-
-    if (tank2.show) {
-        tank2.render()   //  you don't it to detecthit() when its dead
-    }
-
-
-        
-    }
-
-
-// we're going to do this when the content loads
-document.addEventListener('DOMContentLoaded' , function () {
-    // we need to have movement handler
-document.addEventListener('keydown',movementHandler) // FINSH*******
-
-
-
-
-    let clearID = setInterval(gameLoop, frameLength)
-})
-
-
-
-//#############################^^^^^^^^^^^^^^^^^^^^^^^##########################################################
-//##############################################################################################################
-
-
-// this funt is ogint o be how we move our tank around
 // we use e (event)
 
 const movementHandler = (e) => {
+
+    // need an if to grab the player and attribute the + - to the angle and power....
 
     switch (e.keyCode) {
         case (87):
@@ -532,26 +366,134 @@ const movementHandler = (e) => {
 }
 
 
-const detectHit = () => {
-    // use 1 big IF statment
-    // use x,y,width, height of our objects
 
-    if (bullet.x < tank2.x + tank2.width
-        && bullet.x + bullet.width > tank2.x
-        && bullet.y < bullet.y + tank2.height
-        && bullet.y +  bullet.height > tank2.y){
-            // console.log('we have a hit') // testing
 
-            // here see if hit happens
-            if ( tank2.health < 32){
-                tank2.show = false
-            } else{ tank2.health -= 33 }
-            
-            
 
-        }
+
+// constructor(x, y, color, width, height, angle, power, show)
+const fireIt = () => {
+
+    let currentTankAngle = undefined
+    let currentTankPower = undefined
+    let currentTankX     = undefined
+    let currentTankY     = undefined
+
+    // if ( Gplayer1Turn === true ){
+    //     //set tank
+    // }
+
+    
+    console.log('IN FIRE!!!:canvasYToRealY(tank1.y)295:'+canvasYToRealY(tank1.y));
+    // Step: erase prior parameters
+
+    console.log("298:"+tank1.y)
+
+    let bulletTraj = makeBulTrajArray(tank1.x,canvasYToRealY(tank1.y),tank1.angle, tank1.power)  // THIS IS NaNin' the Ys
+
+
+    // have to fix hardcoding for parabolic inputs
+    let paraBolics = parabolicFunction(tank1.x,canvasYToRealY(tank1.y),tank1.angle,tank1.power, canvasYToRealY(tank1.y))
+    console.log('IN FIRE!!!:canvasYToRealY(tank1.y):'+canvasYToRealY(tank1.y));
+
+    let fltTime = paraBolics[3]
+    console.log("fltTime:"+fltTime);
+    forLength = fltTime / (frameLength * .001)
+    console.log("forLength:" +forLength);
+
+    // LOOP KINDA WORKS. Have to stop it once its finished its fltTime
+    let localIterator = 0
+    let endLoop = false
+    
+    let timerID = undefined
+    console.log("timerID:"+timerID)    
+    
+    const localLoop = () => {
+    
+        // if (iterator >= forLength ){
+        //     clearInterval(timerID)
+        // }
+    
+        bullet1.show = true 
+        bullet1.x = bulletTraj[0][localIterator]
+        bullet1.y = realYToCanvasY(bulletTraj[1][localIterator])
+        
+        localIterator++
+
+    }
+    
+    
+    const localClock = () => {
+        
+        let intervalID = setInterval(localLoop,frameLength)
+        console.log("intervalID:"+intervalID)
+    
+        timerID = intervalID
+        console.log("timerIDin:"+timerID)
+    }
+
+
+localClock()
+playerChanger()
 }
 
+
+///=========================================================================================
+// INIT Grabs / GLOBAL SCOPE
+
+const game = document.getElementById('canvas')
+const angleDisplayGrab = document.getElementById('angle')
+const powerDisplayGrab = document.getElementById('power')
+
+const ctx = game.getContext('2d')
+
+game.setAttribute('width',getComputedStyle(game)['width'])
+game.setAttribute('height',getComputedStyle(game)['height'])
+
+
+class ItsOverEntity {
+
+    // attributes that are variable, go in the constructor function
+    constructor(x, y, color, width, height, angle, power, show) {
+
+        // define here: what the object will be made of
+        this.x = x,    
+        this.y = y,  // HAS TO STORE AS CANVAS Y, then convert when needed
+        this.color = color,
+        this.width = width,
+        this.height = height,
+        this.angle = angle,
+        this. power = power, 
+        this.show = show,
+
+        this.health = 100
+
+        // we can also add methods
+        // here our method will be render
+        this.render = function() {
+            // here, we will se the fillstyle and the fillrect
+
+            ctx.fillStyle = this.color
+            ctx.fillRect(this.x, this.y, this.width, this.height)
+        }
+    }
+}
+
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+// INIT OBJECTS
+
+
+
+// SOMETHING FUNKY HERE!!!!
+//       constructor(x, y, color, width, height, angle, power, show)   
+// ideally these values will come from the player and tanks settings
+let tank1 = new ItsOverEntity(tankPlacerX()[0], realYToCanvasY(20), 'green', 16, 10, 45, 50, true)  //!! set bullet Y here IN CANVAS XY,not real
+let tank2 = new ItsOverEntity(tankPlacerX()[1], realYToCanvasY(20),   'red', 16, 10, 40, 70, true)
+
+let bullet1 = new ItsOverEntity(tank1.x, tank1.y, 'white', 3, 3, tank1.angle, tank1.power, false)
+let bullet2 = new ItsOverEntity(tank2.x, tank2.y, 'white', 3, 3, tank2.angle, tank2.power, false)
 
 
 const fireButtonGrab = document.getElementById('fire')
@@ -560,3 +502,48 @@ fireButtonGrab.addEventListener('click',fireIt)
 
 const w3ButtonGrab = document.getElementById('weapon3button')
 w3ButtonGrab.addEventListener('click',showPowAng)
+
+
+//##############################################################################################################
+//#############################vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv#################################################
+const gameLoop = () => {
+
+
+    if (tank2.show) {
+        detectHit()
+    }
+    // need to render both our objects and their respective methods
+    // need to update our movement with coords of tank
+    // to make movement, we need to clear the canvas every 'frame'
+
+
+    
+    
+    ctx.clearRect(0,0,game.width,game.height)
+
+
+    tank1.render()
+
+    if (bullet1.show) {
+        bullet1.render()
+    } 
+
+    if (tank2.show) {
+        tank2.render()   //  you don't it to detecthit() when its dead
+    }
+
+
+        
+    }
+
+
+// we're going to do this when the content loads
+document.addEventListener('DOMContentLoaded' , function () {
+    // we need to have movement handler
+document.addEventListener('keydown',movementHandler) // FINSH*******
+
+
+
+
+    let clearID = setInterval(gameLoop, frameLength)
+})
