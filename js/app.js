@@ -70,13 +70,13 @@ let Gplayer1Turn = true
 
 var GlobalIterator = 0
 
-let globalX = 0
-let globalY = 0
+// let globalX = 0
+// let globalY = 0
 
 var isCurrentTurnOverG = false
 
 let displayAngle = 45
-let displayPower = 30
+let displayPower = 55
 
 
 // @50 milisecond loop, there are 20 repeating loops in a second. So around 20 frames per second
@@ -85,8 +85,8 @@ let frameLength = 65
 
 
 // NEEDS: get from html settings... in px
-var canvasH = 500
-var canvasW = 500
+let canvasH = 500
+let canvasW = 500
 
 
 // setting gravity constant
@@ -147,8 +147,9 @@ const R = (numWithDec) => {
 
 // change canvas xy to normal x,y coordinates
 // so up will be +y, right +x. Run all co-ordindate throughit
-const canvasYToRealY = (canvasY,canvasH) => {
-    return canvasH - canvasY
+const canvasYToRealY = (canvasY) => {  // STUPID not un-used parameter throwing NaN
+    y = canvasH - canvasY
+    return y
 }
 
 
@@ -159,7 +160,7 @@ const realXYToCanvasXY = (realX,realY) => {
 
 const realYToCanvasY = (realYnum) => {
     const canvasY = canvasH -realYnum
-    return [canvasY]
+    return canvasY
 }
 
 // sets the display angle
@@ -220,8 +221,8 @@ const getX = (angle, power, newtime, timeInit, Xinit,) => {
 }
 
 const getY = (angle, power, newtime, timeInit, Yinit,) => {
-    let x = Yinit + power * (newtime - timeInit) * Math.sin(angleToRadians(angle)) - .5 * G * (Math.pow((newtime - timeInit),2))
-    return x
+    let y = Yinit + power * (newtime - timeInit) * Math.sin(angleToRadians(angle)) - .5 * G * (Math.pow((newtime - timeInit),2))
+    return y
 }
 
 const angleToRadians = (angle) =>{
@@ -229,10 +230,14 @@ const angleToRadians = (angle) =>{
     return rads
 }
 
-
+// this is not RETURN THE CORRECT Y VALUES
 const makeBulTrajArray = (x,y,angle, power) => {
+
+
     const bulletTrajArrayX = []
     const bulletTrajArrayY = []
+
+    console.log('239:Y:'+ y);
 
     let para = parabolicFunction(x,y,angle,power,0)
     let totalTime = para[3]
@@ -241,6 +246,8 @@ const makeBulTrajArray = (x,y,angle, power) => {
         bulletTrajArrayX.push(getX(angle,power,i,0,x))
         bulletTrajArrayY.push(getY(angle,power,i,0,y))
     }
+    console.log('bulletTrajArrayX:'+bulletTrajArrayX[5]);
+    console.log('bulletTrajArrayY:'+ bulletTrajArrayY[5]);
     
     return [bulletTrajArrayX,bulletTrajArrayY]
     
@@ -282,14 +289,21 @@ const tankPlacerX = () => {
 // constructor(x, y, color, width, height, angle, power, show)
 const fireIt = () => {
 
-    let localX = globalX
-    let localY = globalY
+    // let localX = globalX
+    // let localY = globalY
+
     
+    console.log('IN FIRE!!!:canvasYToRealY(tank1.y)295:'+canvasYToRealY(tank1.y));
     // Step: erase prior parameters
-    let bulletTraj = makeBulTrajArray(tank1.x,tank1.y,tank1.angle, tank1.power)
-    
+
+    console.log("298:"+tank1.y)
+
+    let bulletTraj = makeBulTrajArray(tank1.x,canvasYToRealY(tank1.y),tank1.angle, tank1.power)  // THIS IS NaNin' the Ys
+
+
     // have to fix hardcoding for parabolic inputs
-    let paraBolics = parabolicFunction(tank1.x,tank1.y,tank1.angle,tank1.power, tank1.y)
+    let paraBolics = parabolicFunction(tank1.x,canvasYToRealY(tank1.y),tank1.angle,tank1.power, canvasYToRealY(tank1.y))
+    console.log('IN FIRE!!!:canvasYToRealY(tank1.y):'+canvasYToRealY(tank1.y));
 
     let fltTime = paraBolics[3]
     console.log("fltTime:"+fltTime);
@@ -334,7 +348,7 @@ playerChanger()
 
 
 ///=========================================================================================
-// =========================================================================================
+
 
 const game = document.getElementById('canvas')
 const angleDisplayGrab = document.getElementById('angle')
@@ -353,7 +367,7 @@ class ItsOverEntity {
 
         // define here: what the object will be made of
         this.x = x,    
-        this.y = y,
+        this.y = y,  // HAS TO STORE AS CANVAS Y, then convert when needed
         this.color = color,
         this.width = width,
         this.height = height,
@@ -374,24 +388,27 @@ class ItsOverEntity {
     }
 }
 
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+
 
 
 // SOMETHING FUNKY HERE!!!!
 //       constructor(x, y, color, width, height, angle, power, show)   
-  // ideally these values will come from the player and tanks settings
-let tank1 = new ItsOverEntity(tankPlacerX()[0], 450, 'green', 16, 10, displayAngle, displayPower, true)  //!! set bullet Y here IN CANVAS XY,not real
-    globalY = canvasYToRealY(tank1.y)
-    globalX = tank1.x
+// ideally these values will come from the player and tanks settings
+let tank1 = new ItsOverEntity(tankPlacerX()[0], realYToCanvasY(20), 'green', 16, 10, displayAngle, displayPower, true)  //!! set bullet Y here IN CANVAS XY,not real
+    // globalY = canvasYToRealY(tank1.y)
+    // globalX = tank1.x
 
 
 let tank2 = new ItsOverEntity(tankPlacerX()[1], realYToCanvasY(20), 'red', 16, 10,40,70,true)
 let bullet = new ItsOverEntity(tank1.x, tank1.y, 'white', 5, 5, tank1.angle, tank1.power, false)
 
-
-
-
-
-
+console.log("bullets:"+bullet.x,bullet.y);
+console.log(tank1.x);
 
 // GONNa try to have a bullet take a shoot path below 
 
