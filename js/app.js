@@ -1,31 +1,29 @@
+// RANDY D'ABBRACCIO 6.24.2022 Copywrite
+
 // Need Functions:
-// tank explosion / coloring change
+// tank explosion / coloring change   - prob need an new object like a bunch of triangles that change color...
 // ground explosion
-// turret motion
+// turret motion **
 // End game state ***
-// 180 degree motion limit on turret
 // muzzle blast
 // stop clock
 // tank movement?
 // background changer
-// minmal viable tank ***
-
-
 
 // Variables needed:
 
 
-
 // Other needed:
 // wash backgrounds/
-// fire sounds
+// fire sounds// clean up makkbullettraj array numbers. Too many negatives
 // turret motion sounds
 // explsion sound
-// 
+// minimal viable tank visual ***
+// HIT DETECTION ****
 
 
 // Broken:
-// Angle and power go up and down but don't display every key press
+// make the FIRE button temporary disable work when shot is gone
 
 
 /// HELPER FUNCTIONS
@@ -60,12 +58,12 @@ const downloadToFile = (content, filename, contentType) => {
 // false is player2
 let Gplayer1Turn = true 
 
-var GlobalIterator = 0
+let GlobalIterator = 0
 
 // let globalX = 0
 // let globalY = 0
 
-var isCurrentTurnOverG = false
+let isCurrentTurnOverG = false
 
 let displayAngle = 45
 let displayPower = 55
@@ -189,6 +187,20 @@ const playerChanger = () => {
     }
 }
 
+const disableFireButton = () => {
+    const fireButtonGrab2 = document.getElementById('fire')
+    fireButtonGrab2.disabled = 'true'
+}
+
+const enableFireButton = () => {
+    const fireButtonGrab2 = document.getElementById('fire')
+    fireButtonGrab2.disabled = 'false'
+}
+
+const fiveSecFireDisable = () => {
+    setTimeout(function(){document.getElementById("fire").disabled = false;},5000)
+}
+
 
 
 // power 0 to 100 , can add height, in METERS. I"ll need a factor to bring numbers down. Like top power is 30 meters/s...
@@ -238,12 +250,6 @@ const angleToRadians = (angle) =>{
 
 
 
-
-
-
-
-
-
 // this is not RETURN THE CORRECT Y VALUES
 const makeBulTrajArray = (x,y,angle, power) => {
 
@@ -255,14 +261,27 @@ const makeBulTrajArray = (x,y,angle, power) => {
 
     let para = parabolicFunction(x,y,angle,power,0)
     let totalTime = para[3]
-    const trajectoryFrames = totalTime / .001 // split up the lengtho of airtime / will change with hangtime / NOt what I want
+    const trajectoryFrames = totalTime / .001 // split ddddup the lengtho of airtime / will change with hangtime / NOt what I want
     for (let i = 0; i < trajectoryFrames; i++){
-        bulletTrajArrayX.push(getX(angle,power,i,0,x))
-        bulletTrajArrayY.push(getY(angle,power,i,0,y))
+
+
+                // !! this could cause some funk if the y and x arrays don't have same number of 
+        if ( getY(angle,power,i,0,y) > (canvasH * -1) ){
+
+            bulletTrajArrayX.push(getX(angle,power,i,0,x))
+            bulletTrajArrayY.push(getY(angle,power,i,0,y))
+        }
+            
     }
-    console.log('bulletTrajArrayX:'+bulletTrajArrayX[5]);
-    console.log('bulletTrajArrayY:'+ bulletTrajArrayY[5]);
-    
+
+
+
+    // // testing
+    // let text = bulletTrajArrayX
+    // downloadToFile(text, 'bulletTrajArrayX', 'text/plain');
+    // text2 = bulletTrajArrayY
+    // downloadToFile(text2, 'bulletTrajArrayY', 'text/plain');
+
     return [bulletTrajArrayX,bulletTrajArrayY]
     
 }
@@ -301,19 +320,21 @@ const detectHit = () => {
     // use 1 big IF statment
     // use x,y,width, height of our objects
 
-    if (bullet1.x < tank2.x + tank2.width
-        && bullet1.x + bullet1.width > tank2.x
-        && bullet1.y < bullet1.y + tank2.height
-        && bullet1.y +  bullet1.height > tank2.y){
-            // console.log('we have a hit') // testing
+    console.log('Detected HIT');
 
-            // here see if hit happens
-            if ( tank2.health < 32){
-                tank2.show = false
-            } else{ tank2.health -= 33 }
+    // if (bullet1.x < tank2.x + tank2.width
+    //     && bullet1.x + bullet1.width > tank2.x
+    //     && bullet1.y < bullet1.y + tank2.height
+    //     && bullet1.y +  bullet1.height > tank2.y){
+    //         // console.log('we have a hit') // testing
 
-            window.alert("HIT!");    
-        }
+    //         // here see if hit happens
+    //         if ( tank2.health < 32){
+    //             tank2.show = false
+    //         } else{ tank2.health -= 33 }
+
+    //         window.alert("HIT!");    
+    //     }
 }
 
 
@@ -421,17 +442,15 @@ const movementHandler = (e) => {
 }
 
 
-
-
-
-
 // constructor(x, y, color, width, height, angle, power, show)
 const fireIt = () => {
 
-    let currentTankAngle = undefined
-    let currentTankPower = undefined
-    let currentTankX     = undefined
-    let currentTankY     = undefined
+    let localIterator = 0
+
+    let currentTankAngle
+    let currentTankPower
+    let currentTankX
+    let currentTankY
 
     if ( Gplayer1Turn === true ){
 
@@ -452,7 +471,7 @@ const fireIt = () => {
 
 
 
-    let bulletTraj = makeBulTrajArray(currentTankX,canvasYToRealY(currentTankY),currentTankAngle, currentTankPower)  // THIS IS NaNin' the Ys
+    let bulletTraj = makeBulTrajArray(currentTankX,canvasYToRealY(currentTankY),currentTankAngle, currentTankPower)
 
     // const parabolicFunction = (realX,realY,angle,power, height)
     // have to fix hardcoding for parabolic inputs
@@ -461,27 +480,42 @@ const fireIt = () => {
 
     let fltTime = paraBolics[3]
     console.log("fltTime:"+fltTime);
-    forLength = fltTime / (frameLength * .001)
+    let forLength = fltTime / (frameLength * .01)   // this will also increase the forLength time, which impacts the loop termination time
     console.log("forLength:" +forLength);
 
     // LOOP KINDA WORKS. Have to stop it once its finished its fltTime
-    let localIterator = 0
-    let endLoop = false
+
     
-    let timerID = undefined
-    console.log("timerID:"+timerID)    
-    
+    let timerID
+
+
+
     const localLoop = () => {
+        const fireButtonGrab2 = document.getElementById('fire')
+
     
-        // if (iterator >= forLength ){
-        //     clearInterval(timerID)
-        // }
-    
-        bullet1.show = true 
-        bullet1.x = bulletTraj[0][localIterator]
-        bullet1.y = realYToCanvasY(bulletTraj[1][localIterator])
+        if (localIterator >= forLength ){
+            clearInterval(timerID)
+            console.log('Cleared localLoop');
+        }
         
+
+        if(Gplayer1Turn){
+            bullet1.show = true 
+            bullet1.x = bulletTraj[0][localIterator]
+            bullet1.y = realYToCanvasY(bulletTraj[1][localIterator])
+
+        } else {
+             bullet2.show = true 
+             bullet2.x = bulletTraj[0][localIterator]
+             bullet2.y = realYToCanvasY(bulletTraj[1][localIterator])
+        }
         localIterator++
+
+
+
+
+
 
     }
     
@@ -495,9 +529,19 @@ const fireIt = () => {
         console.log("timerIDin:"+timerID)
     }
 
+    currentTankAngle = null
+    currentTankPower = null
+    currentTankX     = null
+    currentTankY     = null    
+
+
+
+clearInterval(timerID)
 
 localClock()
+
 playerChanger()
+console.log('OUT OF LOCALLOOP and LEAVING FIREIT');
 }
 
 
@@ -514,6 +558,7 @@ game.setAttribute('width',getComputedStyle(game)['width'])
 game.setAttribute('height',getComputedStyle(game)['height'])
 
 
+
 class ItsOverEntity {
 
     // attributes that are variable, go in the constructor function
@@ -526,7 +571,7 @@ class ItsOverEntity {
         this.width = width,
         this.height = height,
         this.angle = angle,
-        this. power = power, 
+        this.power = power, 
         this.show = show,
 
         this.health = 100
@@ -563,6 +608,30 @@ class Terrain {
     }
 }
 
+class TestObject {
+
+    // attributes that are variable, go in the constructor function
+    constructor(x, y, color, width, height,show) {
+
+        this.x = x,    
+        this.y = y,
+        this.color = color,
+        this.width = width,
+        this.height = height,
+        this.show = true,
+
+        this.render = function() {
+            // here, we will se the fillstyle and the fillrect
+
+            ctx.fillStyle = this.color
+            // ctx.fillRect(x, y, color, width, height,show)
+            //roundedRect(ctx, 12, 12, 150, 150, 15);
+        
+        
+        }
+    }
+}
+
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -574,13 +643,15 @@ class Terrain {
 // SOMETHING FUNKY HERE!!!!
 //       constructor(x, y, color, width, height, angle, power, show)   
 // ideally these values will come from the player and tanks settings
-let tank1 = new ItsOverEntity(tankPlacerX()[0], realYToCanvasY(40), 'green', 16, 10, 45, 50, true)  //!! set bullet Y here IN CANVAS XY,not real
-let tank2 = new ItsOverEntity(tankPlacerX()[1], realYToCanvasY(40),   'red', 16, 10, 40, 70, true)
+let tank1 = new ItsOverEntity(tankPlacerX()[0], realYToCanvasY(40), 'green', 16, 10, 91, 90, true)  //!! set bullet Y here IN CANVAS XY,not real
+let tank2 = new ItsOverEntity(tankPlacerX()[1], realYToCanvasY(40),   'red', 16, 10, 89, 90, true)
 
 let bullet1 = new ItsOverEntity(tank1.x, tank1.y, 'white', 3, 3, tank1.angle, tank1.power, false)
 let bullet2 = new ItsOverEntity(tank2.x, tank2.y, 'white', 3, 3, tank2.angle, tank2.power, false)
 
-let terrain = new Terrain(0, realYToCanvasY(30),'gray',canvasW,realYToCanvasY(40),true)
+let terrain = new Terrain(0, realYToCanvasY(30),'#784212',canvasW,realYToCanvasY(40),true)
+
+let tO = new TestObject(tankPlacerX()[0], realYToCanvasY(40), 'black', 16, 10, 45, 50, true)
 
 
 const fireButtonGrab = document.getElementById('fire')
@@ -609,11 +680,17 @@ const gameLoop = () => {
     ctx.clearRect(0,0,game.width,game.height)
 
 
-    tank1.render()
+    if (tank1.show) {
+        tank1.render()   //  you don't it to detecthit() when its dead
+    }
 
     if (bullet1.show) {
         bullet1.render()
     } 
+
+    if (bullet2.show) {
+        bullet2.render()
+    }
 
     if (tank2.show) {
         tank2.render()   //  you don't it to detecthit() when its dead
@@ -621,7 +698,7 @@ const gameLoop = () => {
 
     terrain.render()
 
-
+    tO.render()
         
 }
 
