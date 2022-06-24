@@ -78,7 +78,7 @@ let frameLength = 65
 
 // NEEDS: get from html settings... in px
 let canvasH = 500
-let canvasW = 500
+let canvasW = 700
 
 
 // setting gravity constant
@@ -137,7 +137,7 @@ const R = (numWithDec) => {
 
 // change canvas xy to normal x,y coordinates
 // so up will be +y, right +x. Run all co-ordindate throughit
-const canvasYToRealY = (canvasY) => {  // STUPID not un-used parameter throwing NaN
+const canvasYToRealY = (canvasY) => {  // STUPID  un-used parameter throwing NaN
     y = canvasH - canvasY
     return y
 }
@@ -155,12 +155,25 @@ const realYToCanvasY = (realYnum) => {
 
 // sets the display angle
 const showAngle = () => {
-    angleDisplayGrab.innerText = `Angle: ${displayAngle}`
+    if (Gplayer1Turn){
+        angleDisplayGrab.innerText = `Angle: ${tank1.angle}`
+    } else {
+        angleDisplayGrab.innerText = `Angle: ${tank2.angle}`
+    }
 }
 
 // sets the display power
 const showPower = () => {
-    powerDisplayGrab.innerText = `Power: ${displayPower}`
+    if (Gplayer1Turn){
+        powerDisplayGrab.innerText = `Power: ${tank1.power}`
+    } else {
+        powerDisplayGrab.innerText = `Power: ${tank2.power}`
+    }
+}
+
+const showPowAng = () => {
+    showAngle()
+    showPower()
 }
 
 
@@ -254,10 +267,7 @@ const makeBulTrajArray = (x,y,angle, power) => {
     
 }
 
-const showPowAng = () => {
-    showAngle()
-    showPower()
-}
+
 
 const generateRand = (min,max) => {
     let diff =  max - min
@@ -302,10 +312,7 @@ const detectHit = () => {
                 tank2.show = false
             } else{ tank2.health -= 33 }
 
-            window.alert("HIT!");
-            
-            
-
+            window.alert("HIT!");    
         }
 }
 
@@ -318,51 +325,99 @@ const detectHit = () => {
 const movementHandler = (e) => {
 
     // need an if to grab the player and attribute the + - to the angle and power....
+    if (Gplayer1Turn){
+        switch (e.keyCode) {
+            case (87):
+            case (38):  // CASCADE to get it to work with other keys
+                // adjusts tank cannon vel
 
-    switch (e.keyCode) {
-        case (87):
-        case (38):  // CASCADE to get it to work with other keys
-            // adjusts tank cannon vel
+                if (tank1.power >= 99){
+                    tank1.power = 99
+                }
+                tank1.power += 1
 
-            if (displayPower >= 99){
-                displayPower = 99
-            }
-            displayPower += 1
-
-            // needs break
-            break
-        
-
-            case (68):
-            case (39):  
-
-
-            // deacreases angle
-            if (displayAngle <=0 ){   // limits the angle to 180deg
-                displayAngle = 0
-            } else (displayAngle -= 1)
-            break 
-
-        case (83):
-        case (40):    
-            // decreases the power
-            if (displayPower < 1){
-                displayPower = 1
-            }
-            displayPower -= 1 
-            break
-
-
-            case (65):
-            case (37):  
-            // this increases the angle
-            if (displayAngle >= 180){   // limits the angle to 180deg
-                displayAngle =180
-            } else (displayAngle += 1)
+                // needs break
+                break
             
-            break
-    }
 
+                case (68):
+                case (39):  
+
+
+                // deacreases angle
+                if (tank1.angle <=0 ){   // limits the angle to 180deg
+                    tank1.angle = 0
+                } else (tank1.angle -= 1)
+                break 
+
+            case (83):
+            case (40):    
+                // decreases the power
+                if (tank1.power < 1){
+                    tank1.power = 1
+                }
+                tank1.power -= 1 
+                break
+
+
+                case (65):
+                case (37):  
+                // this increases the angle
+                if (tank1.angle >= 180){   // limits the angle to 180deg
+                    tank1.angle =180
+                } else (tank1.angle += 1)
+                
+                break
+        }
+
+    } else{
+
+
+        switch (e.keyCode) {
+            case (87):
+            case (38):  // CASCADE to get it to work with other keys
+                // adjusts tank cannon vel
+
+                if (tank2.power >= 99){
+                    tank2.power = 99
+                }
+                tank2.power += 1
+
+                // needs break
+                break
+            
+
+                case (68):
+                case (39):  
+
+
+                // deacreases angle
+                if (tank2.angle <=0 ){   // limits the angle to 180deg
+                    tank2.angle = 0
+                } else (tank2.angle -= 1)
+                break 
+
+            case (83):
+            case (40):    
+                // decreases the power
+                if (tank2.power < 1){
+                    tank2.power = 1
+                }
+                tank2.power -= 1 
+                break
+
+
+                case (65):
+                case (37):  
+                // this increases the angle
+                if (tank2.angle >= 180){   // limits the angle to 180deg
+                    tank2.angle =180
+                } else (tank2.angle += 1)
+                
+                break
+        }
+
+    }
 }
 
 
@@ -378,22 +433,31 @@ const fireIt = () => {
     let currentTankX     = undefined
     let currentTankY     = undefined
 
-    // if ( Gplayer1Turn === true ){
-    //     //set tank
-    // }
+    if ( Gplayer1Turn === true ){
 
-    
-    console.log('IN FIRE!!!:canvasYToRealY(tank1.y)295:'+canvasYToRealY(tank1.y));
+        currentTankAngle = tank1.angle
+        currentTankPower = tank1.power
+        currentTankX     = tank1.x
+        currentTankY     = tank1.y  
+
+    } else{
+
+        currentTankAngle = tank2.angle
+        currentTankPower = tank2.power
+        currentTankX     = tank2.x
+        currentTankY     = tank2.y 
+    }
+
     // Step: erase prior parameters
 
-    console.log("298:"+tank1.y)
-
-    let bulletTraj = makeBulTrajArray(tank1.x,canvasYToRealY(tank1.y),tank1.angle, tank1.power)  // THIS IS NaNin' the Ys
 
 
+    let bulletTraj = makeBulTrajArray(currentTankX,canvasYToRealY(currentTankY),currentTankAngle, currentTankPower)  // THIS IS NaNin' the Ys
+
+    // const parabolicFunction = (realX,realY,angle,power, height)
     // have to fix hardcoding for parabolic inputs
-    let paraBolics = parabolicFunction(tank1.x,canvasYToRealY(tank1.y),tank1.angle,tank1.power, canvasYToRealY(tank1.y))
-    console.log('IN FIRE!!!:canvasYToRealY(tank1.y):'+canvasYToRealY(tank1.y));
+    let paraBolics = parabolicFunction(currentTankX,canvasYToRealY(currentTankY),currentTankAngle,currentTankPower, canvasYToRealY(currentTankY))
+
 
     let fltTime = paraBolics[3]
     console.log("fltTime:"+fltTime);
@@ -478,6 +542,27 @@ class ItsOverEntity {
     }
 }
 
+class Terrain {
+
+    // attributes that are variable, go in the constructor function
+    constructor(x, y, color, width, height,show) {
+
+        this.x = x,    
+        this.y = y,
+        this.color = color,
+        this.width = width,
+        this.height = height,
+        this.show = show,
+
+        this.render = function() {
+            // here, we will se the fillstyle and the fillrect
+
+            ctx.fillStyle = this.color
+            ctx.fillRect(this.x, this.y, this.width, this.height)
+        }
+    }
+}
+
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -489,11 +574,13 @@ class ItsOverEntity {
 // SOMETHING FUNKY HERE!!!!
 //       constructor(x, y, color, width, height, angle, power, show)   
 // ideally these values will come from the player and tanks settings
-let tank1 = new ItsOverEntity(tankPlacerX()[0], realYToCanvasY(20), 'green', 16, 10, 45, 50, true)  //!! set bullet Y here IN CANVAS XY,not real
-let tank2 = new ItsOverEntity(tankPlacerX()[1], realYToCanvasY(20),   'red', 16, 10, 40, 70, true)
+let tank1 = new ItsOverEntity(tankPlacerX()[0], realYToCanvasY(40), 'green', 16, 10, 45, 50, true)  //!! set bullet Y here IN CANVAS XY,not real
+let tank2 = new ItsOverEntity(tankPlacerX()[1], realYToCanvasY(40),   'red', 16, 10, 40, 70, true)
 
 let bullet1 = new ItsOverEntity(tank1.x, tank1.y, 'white', 3, 3, tank1.angle, tank1.power, false)
 let bullet2 = new ItsOverEntity(tank2.x, tank2.y, 'white', 3, 3, tank2.angle, tank2.power, false)
+
+let terrain = new Terrain(0, realYToCanvasY(30),'gray',canvasW,realYToCanvasY(40),true)
 
 
 const fireButtonGrab = document.getElementById('fire')
@@ -517,7 +604,7 @@ const gameLoop = () => {
     // to make movement, we need to clear the canvas every 'frame'
 
 
-    
+    showPowAng()
     
     ctx.clearRect(0,0,game.width,game.height)
 
@@ -532,9 +619,11 @@ const gameLoop = () => {
         tank2.render()   //  you don't it to detecthit() when its dead
     }
 
+    terrain.render()
+
 
         
-    }
+}
 
 
 // we're going to do this when the content loads
