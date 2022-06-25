@@ -317,24 +317,64 @@ const tankPlacerX = () => {
 
 
 const detectHit = () => {
-    // use 1 big IF statment
+
+
+            // THIS WORKS FOR Mouse
+            // yello ride side >= tank2 left side && mouse left side <= tank2 right side
+        // yellow bottom >= blue top &&
+        if (mouse.x + 4 >= tank2.x 
+            && mouse.x <= tank2.x + 16
+            && mouse.y + 4 >= tank2.y && mouse.y <= tank2.y + 10
+            
+            ) {
+            console.log("X HIT") 
+        }
+
+
+
+    let currentBullet
+    let currentTank    
+
     // use x,y,width, height of our objects
 
-    console.log('Detected HIT');
+    if (Gplayer1Turn){
+        currentBullet = bullet1
+        currentTank   = tank2
+    } else {
+        currentBullet = bullet2
+        currentTank   = tank1
+    }
 
-    // if (bullet1.x < tank2.x + tank2.width
-    //     && bullet1.x + bullet1.width > tank2.x
-    //     && bullet1.y < bullet1.y + tank2.height
-    //     && bullet1.y +  bullet1.height > tank2.y){
-    //         // console.log('we have a hit') // testing
+            // 4 is W/H of bulelt 10/16 W/H of tank
+    if(currentBullet.x + 4 >= currentTank.x   &&
+        currentBullet.x <= currentTank.x + 16 &&
+        currentBullet.y +4 >= currentTank.y &&
+        currentBullet.y <= currentTank.y + 10){
+            window.alert("HIT353")
+        }
+        
+        
+        
 
-    //         // here see if hit happens
-    //         if ( tank2.health < 32){
-    //             tank2.show = false
-    //         } else{ tank2.health -= 33 }
+    // OLD
+    // if(currentBullet.x < currentTank.x + currentTank.width
+    // && currentBullet.x + currentBullet.width > currentTank.x
+    // && currentBullet.y < currentBullet.y + currentTank.height
+    // && currentBullet.y +  currentBullet.height > currentTank.y){
 
-    //         window.alert("HIT!");    
-    //     }
+    //     console.log('DETECTED HIT');
+
+    // }
+            // console.log('we have a hit') // testing
+
+            // here see if hit happens
+            // if ( currentTank.health < 32){
+            //     currentTank.show = false
+            // } else{ currentTank.health -= 33 }
+
+           
+        
+
 }
 
 
@@ -557,6 +597,16 @@ const ctx = game.getContext('2d')
 game.setAttribute('width',getComputedStyle(game)['width'])
 game.setAttribute('height',getComputedStyle(game)['height'])
 
+// testing
+const mouse = {
+    x: canvasW /2,
+    y: canvasH / 2
+}
+
+addEventListener('mousemove', (event) => {
+    mouse.x = event.clientX
+    mouse.y = event.clientY
+})
 
 
 class ItsOverEntity {
@@ -676,8 +726,19 @@ const gameLoop = () => {
 
 
     showPowAng()
+
+
     
     ctx.clearRect(0,0,game.width,game.height)
+
+
+        // testing
+        ctx.fillStyle = "yellow"
+        ctx.fillRect(mouse.x,mouse.y,4,4 )
+
+
+
+
 
 
     if (tank1.show) {
