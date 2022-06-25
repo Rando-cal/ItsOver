@@ -14,7 +14,7 @@
 
 
 // Other needed:
-// wash backgrounds/
+// wash backgrounds
 // fire sounds// clean up makkbullettraj array numbers. Too many negatives
 // turret motion sounds
 // explsion sound
@@ -24,6 +24,13 @@
 
 // Broken:
 // make the FIRE button temporary disable work when shot is gone
+// Hit detect
+// WHERE the bullets are originating and whos turn it is
+
+
+
+// Stretch:
+// 
 
 
 /// HELPER FUNCTIONS
@@ -315,21 +322,18 @@ const tankPlacerX = () => {
     //      render when needed
 
 
-
+// STILL WONKY
 const detectHit = () => {
-
-
             // THIS WORKS FOR Mouse
             // yello ride side >= tank2 left side && mouse left side <= tank2 right side
         // yellow bottom >= blue top &&
-        if (mouse.x + 4 >= tank2.x 
-            && mouse.x <= tank2.x + 16
-            && mouse.y + 4 >= tank2.y && mouse.y <= tank2.y + 10
+        // if (mouse.x + 4 >= tank2.x 
+        //     && mouse.x <= tank2.x + 16
+        //     && mouse.y + 4 >= tank2.y && mouse.y <= tank2.y + 10
             
-            ) {
-            console.log("X HIT") 
-        }
-
+        //     ) {
+        //     console.log("X HIT") 
+        // }
 
 
     let currentBullet
@@ -346,11 +350,22 @@ const detectHit = () => {
     }
 
             // 4 is W/H of bulelt 10/16 W/H of tank
-    if(currentBullet.x + 4 >= currentTank.x   &&
-        currentBullet.x <= currentTank.x + 16 &&
-        currentBullet.y +4 >= currentTank.y &&
-        currentBullet.y <= currentTank.y + 10){
-            window.alert("HIT353")
+    // console.log('A:' + (currentBullet.x + currentBullet.width >= currentTank.x))
+    // console.log('B:'+ (currentBullet.x <= currentTank.x + currentTank.width))
+    // console.log('C:'+ (currentBullet.y + currentBullet.height >= currentTank.y))
+    // console.log('D:' + (currentBullet.y <= currentTank.y + currentTank.height))
+    // console.log('==================================================================');
+
+    if(currentBullet.x + currentBullet.width >= currentTank.x   &&
+        
+        currentBullet.x <= currentTank.x + currentTank.width &&
+
+        currentBullet.y + currentBullet.height >= currentTank.y &&
+        
+        currentBullet.y <= currentTank.y + currentTank.height
+
+    ){
+            window.alert('HIT')
         }
         
         
@@ -371,10 +386,6 @@ const detectHit = () => {
             // if ( currentTank.health < 32){
             //     currentTank.show = false
             // } else{ currentTank.health -= 33 }
-
-           
-        
-
 }
 
 
@@ -487,12 +498,14 @@ const fireIt = () => {
 
     let localIterator = 0
 
+    console.log('in FIREIT:'+ new Date() );
+
     let currentTankAngle
     let currentTankPower
     let currentTankX
     let currentTankY
 
-    if ( Gplayer1Turn === true ){
+    if ( Gplayer1Turn){
 
         currentTankAngle = tank1.angle
         currentTankPower = tank1.power
@@ -509,7 +522,7 @@ const fireIt = () => {
 
     // Step: erase prior parameters
 
-
+console.log('currentTankAngle: FIREIT:')+ currentTankX,currentTankY;
 
     let bulletTraj = makeBulTrajArray(currentTankX,canvasYToRealY(currentTankY),currentTankAngle, currentTankPower)
 
@@ -529,14 +542,17 @@ const fireIt = () => {
     let timerID
 
 
+    const fireItLocalLoop = () => { // why is this RUNNING CONSTANTLY
 
-    const localLoop = () => {
-        const fireButtonGrab2 = document.getElementById('fire')
 
+
+        // const fireButtonGrab2 = document.getElementById('fire')
+        console.log('in fireItLocalLoop:'+ new Date() );
     
         if (localIterator >= forLength ){
             clearInterval(timerID)
-            console.log('Cleared localLoop');
+            playerChanger()
+            console.log('Cleared fireItLocalLoop');
         }
         
 
@@ -552,36 +568,37 @@ const fireIt = () => {
         }
         localIterator++
 
-
-
-
-
+        // FLIGHT TIME SHOULD BE OVER
 
     }
     
     
     const localClock = () => {
+
+        console.log('in localCLock:'+ new Date() );
+
         
-        let intervalID = setInterval(localLoop,frameLength)
+        let intervalID = setInterval(fireItLocalLoop,frameLength)  // SEE THIS VALUE
         console.log("intervalID:"+intervalID)
     
         timerID = intervalID
         console.log("timerIDin:"+timerID)
     }
 
-    currentTankAngle = null
-    currentTankPower = null
-    currentTankX     = null
-    currentTankY     = null    
+    // currentTankAngle = null
+    // currentTankPower = null
+    // currentTankX     = null
+    // currentTankY     = null    
 
 
 
 clearInterval(timerID)
 
-localClock()
+localClock()  // something funky here and next line
 
-playerChanger()
-console.log('OUT OF LOCALLOOP and LEAVING FIREIT');
+
+// playerChanger() // THIS CAUSED BULLET MIXING
+console.log('LEAVING Fireit');
 }
 
 
@@ -598,15 +615,15 @@ game.setAttribute('width',getComputedStyle(game)['width'])
 game.setAttribute('height',getComputedStyle(game)['height'])
 
 // testing
-const mouse = {
-    x: canvasW /2,
-    y: canvasH / 2
-}
+// const mouse = {
+//     x: canvasW /2,
+//     y: canvasH / 2
+// }
 
-addEventListener('mousemove', (event) => {
-    mouse.x = event.clientX
-    mouse.y = event.clientY
-})
+// addEventListener('mousemove', (event) => {
+//     mouse.x = event.clientX
+//     mouse.y = event.clientY
+// })
 
 
 class ItsOverEntity {
@@ -668,7 +685,7 @@ class TestObject {
         this.color = color,
         this.width = width,
         this.height = height,
-        this.show = true,
+        this.show = show,
 
         this.render = function() {
             // here, we will se the fillstyle and the fillrect
@@ -693,13 +710,22 @@ class TestObject {
 // SOMETHING FUNKY HERE!!!!
 //       constructor(x, y, color, width, height, angle, power, show)   
 // ideally these values will come from the player and tanks settings
-let tank1 = new ItsOverEntity(tankPlacerX()[0], realYToCanvasY(40), 'green', 16, 10, 91, 90, true)  //!! set bullet Y here IN CANVAS XY,not real
-let tank2 = new ItsOverEntity(tankPlacerX()[1], realYToCanvasY(40),   'red', 16, 10, 89, 90, true)
 
-let bullet1 = new ItsOverEntity(tank1.x, tank1.y, 'white', 3, 3, tank1.angle, tank1.power, false)
-let bullet2 = new ItsOverEntity(tank2.x, tank2.y, 'white', 3, 3, tank2.angle, tank2.power, false)
+// working
+// let tank1 = new ItsOverEntity(tankPlacerX()[0], realYToCanvasY(40), 'green', 16, 10, 91, 90, true)  //!! set bullet Y here IN CANVAS XY,not real
+// let tank2 = new ItsOverEntity(tankPlacerX()[1], realYToCanvasY(40),   'red', 16, 10, 89, 90, true)
+
+
 
 let terrain = new Terrain(0, realYToCanvasY(30),'#784212',canvasW,realYToCanvasY(40),true)
+
+// testing
+let tank1 = new ItsOverEntity(100, realYToCanvasY(40), 'green', 16, 10, 66, 72, true)  //!! set bullet Y here IN CANVAS XY,not real
+let tank2 = new ItsOverEntity(500, realYToCanvasY(40),   'red', 16, 10, 90, 80, true)
+
+let bullet1 = new ItsOverEntity(tank1.x, tank1.y, 'white', 3, 3, tank1.angle, tank1.power, false)
+let bullet2 = new ItsOverEntity(tank2.x, tank2.y, 'red', 3, 3, tank2.angle, tank2.power, false)
+
 
 let tO = new TestObject(tankPlacerX()[0], realYToCanvasY(40), 'black', 16, 10, 45, 50, true)
 
@@ -717,33 +743,14 @@ w3ButtonGrab.addEventListener('click',showPowAng)
 const gameLoop = () => {
 
 
-    if (tank2.show) {
-        detectHit()
-    }
-    // need to render both our objects and their respective methods
-    // need to update our movement with coords of tank
-    // to make movement, we need to clear the canvas every 'frame'
-
-
-    showPowAng()
-
-
     
     ctx.clearRect(0,0,game.width,game.height)
 
+    showPowAng()
 
         // testing
-        ctx.fillStyle = "yellow"
-        ctx.fillRect(mouse.x,mouse.y,4,4 )
-
-
-
-
-
-
-    if (tank1.show) {
-        tank1.render()   //  you don't it to detecthit() when its dead
-    }
+        // ctx.fillStyle = "yellow"
+        // ctx.fillRect(mouse.x,mouse.y,4,4 )
 
     if (bullet1.show) {
         bullet1.render()
@@ -753,9 +760,19 @@ const gameLoop = () => {
         bullet2.render()
     }
 
-    if (tank2.show) {
-        tank2.render()   //  you don't it to detecthit() when its dead
+    if (tank1.show) {
+        tank1.render()
     }
+
+    if (tank2.show) {
+        tank2.render()
+    }
+
+    if (tank1.show) {
+        detectHit() }
+
+    if (tank2.show) {
+        detectHit() }
 
     terrain.render()
 
@@ -768,9 +785,6 @@ const gameLoop = () => {
 document.addEventListener('DOMContentLoaded' , function () {
     // we need to have movement handler
 document.addEventListener('keydown',movementHandler) // FINSH*******
-
-
-
 
     let clearID = setInterval(gameLoop, frameLength)
 })
