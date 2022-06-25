@@ -63,7 +63,7 @@ const downloadToFile = (content, filename, contentType) => {
 
 
 // false is player2
-let Gplayer1Turn = true 
+let Gplayer1Turn = false 
 
 let GlobalIterator = 0
 
@@ -78,7 +78,7 @@ let displayPower = 55
 
 // @50 milisecond loop, there are 20 repeating loops in a second. So around 20 frames per second
 // 65 appears to be a good balance
-let frameLength = 65
+let frameLength = 20
 
 
 // NEEDS: get from html settings... in px
@@ -260,19 +260,29 @@ const angleToRadians = (angle) =>{
 // this is not RETURN THE CORRECT Y VALUES
 const makeBulTrajArray = (x,y,angle, power) => {
 
+// !!!! DO WE CARE IF IT DOESN"T KNOW THE BULLET?
+
 
     const bulletTrajArrayX = []
     const bulletTrajArrayY = []
 
     console.log('239:Y:'+ y);
 
+    // para takes, x,y,angle,power,height
     let para = parabolicFunction(x,y,angle,power,0)
     let totalTime = para[3]
-    const trajectoryFrames = totalTime / .001 // split ddddup the lengtho of airtime / will change with hangtime / NOt what I want
-    for (let i = 0; i < trajectoryFrames; i++){
+
+    // set FactorZ to .01 for many frames, and .1 for fewer ~ 157
+    const factorZ = .01
+    const trajectoryFrames = totalTime / factorZ // split ddddup the lengtho of airtime / will change with hangtime / NOt what I want
+    
+    // !!! the iterator amount in the FOR dictates the bullet path 'fidelity'
+    let makeTrajIteratorAmount = .1  // !!!!!
+    
+    for (let i = 0; i < trajectoryFrames; i= i + makeTrajIteratorAmount){
 
 
-                // !! this could cause some funk if the y and x arrays don't have same number of 
+        // getY = (angle, power, newtime, timeInit, Yinit,)
         if ( getY(angle,power,i,0,y) > (canvasH * -1) ){
 
             bulletTrajArrayX.push(getX(angle,power,i,0,x))
@@ -292,8 +302,6 @@ const makeBulTrajArray = (x,y,angle, power) => {
     return [bulletTrajArrayX,bulletTrajArrayY]
     
 }
-
-
 
 const generateRand = (min,max) => {
     let diff =  max - min
@@ -365,7 +373,9 @@ const detectHit = () => {
         currentBullet.y <= currentTank.y + currentTank.height
 
     ){
+            // ITS HITTING 3 TIMES??????
             window.alert('HIT')
+            console.log('HIT'+ new Date() );
         }
         
         
@@ -520,20 +530,17 @@ const fireIt = () => {
         currentTankY     = tank2.y 
     }
 
-    // Step: erase prior parameters
-
-console.log('currentTankAngle: FIREIT:')+ currentTankX,currentTankY;
 
     let bulletTraj = makeBulTrajArray(currentTankX,canvasYToRealY(currentTankY),currentTankAngle, currentTankPower)
 
-    // const parabolicFunction = (realX,realY,angle,power, height)
-    // have to fix hardcoding for parabolic inputs
     let paraBolics = parabolicFunction(currentTankX,canvasYToRealY(currentTankY),currentTankAngle,currentTankPower, canvasYToRealY(currentTankY))
 
 
     let fltTime = paraBolics[3]
     console.log("fltTime:"+fltTime);
-    let forLength = fltTime / (frameLength * .01)   // this will also increase the forLength time, which impacts the loop termination time
+
+    let factorQ = .001
+    let forLength = fltTime / (frameLength * factorQ)   // this will also increase the forLength time, which impacts the loop termination time
     console.log("forLength:" +forLength);
 
     // LOOP KINDA WORKS. Have to stop it once its finished its fltTime
@@ -566,7 +573,8 @@ console.log('currentTankAngle: FIREIT:')+ currentTankX,currentTankY;
              bullet2.x = bulletTraj[0][localIterator]
              bullet2.y = realYToCanvasY(bulletTraj[1][localIterator])
         }
-        localIterator++
+        const fireItIteratorAmount = 1
+        localIterator = localIterator + fireItIteratorAmount
 
         // FLIGHT TIME SHOULD BE OVER
 
@@ -711,17 +719,12 @@ class TestObject {
 //       constructor(x, y, color, width, height, angle, power, show)   
 // ideally these values will come from the player and tanks settings
 
-// working
-// let tank1 = new ItsOverEntity(tankPlacerX()[0], realYToCanvasY(40), 'green', 16, 10, 91, 90, true)  //!! set bullet Y here IN CANVAS XY,not real
-// let tank2 = new ItsOverEntity(tankPlacerX()[1], realYToCanvasY(40),   'red', 16, 10, 89, 90, true)
-
-
-
 let terrain = new Terrain(0, realYToCanvasY(30),'#784212',canvasW,realYToCanvasY(40),true)
 
 // testing
-let tank1 = new ItsOverEntity(100, realYToCanvasY(40), 'green', 16, 10, 66, 72, true)  //!! set bullet Y here IN CANVAS XY,not real
-let tank2 = new ItsOverEntity(500, realYToCanvasY(40),   'red', 16, 10, 90, 80, true)
+let tank1 = new ItsOverEntity(100, realYToCanvasY(40), 'green', 16, 10, 75, 80, true)  //!! set bullet Y here IN CANVAS XY,not real
+let tank2 = new ItsOverEntity(200, realYToCanvasY(40),   'red', 16, 10, 90, 80, true)
+
 
 let bullet1 = new ItsOverEntity(tank1.x, tank1.y, 'white', 3, 3, tank1.angle, tank1.power, false)
 let bullet2 = new ItsOverEntity(tank2.x, tank2.y, 'red', 3, 3, tank2.angle, tank2.power, false)
@@ -744,7 +747,7 @@ const gameLoop = () => {
 
 
     
-    ctx.clearRect(0,0,game.width,game.height)
+     ctx.clearRect(0,0,game.width,game.height)
 
     showPowAng()
 
@@ -754,10 +757,12 @@ const gameLoop = () => {
 
     if (bullet1.show) {
         bullet1.render()
+        detectHit()
     } 
 
     if (bullet2.show) {
         bullet2.render()
+        detectHit()
     }
 
     if (tank1.show) {
