@@ -23,9 +23,7 @@
 
 
 // Broken:
-// make the FIRE button temporary disable work when shot is gone
-// turn changer
-
+// damage taken is detect-hitting multiple times and is not working correctly
 
 
 // Stretch:
@@ -143,6 +141,28 @@ let updateHealths = () => {
     p1Health.innerText = `Player 1 Health: ${tank1.health}`
     p2Health.innerText = `Player 2 Health: ${tank2.health}`
 }
+
+const randomBackground = () => {
+    imgLocations = [
+    "img/finished/b1-800x571.jpg",
+    "img/finished/b2-800x576.jpg",
+    "img/finished/b3-800x45x.jpg",
+    "img/finished/b10-800x540.jpg",
+    "img/finished/b11-800x635.jpg",
+    "img/finished/b12-800x555.jpg",
+    "img/finished/b4-800x556.jpg",
+    "img/finished/b5-800x583.jpg",
+    "img/finished/b6-800x562.jpg",
+    "img/finished/b7-800x610.jpg",
+    "img/finished/b8-800x645.jpg",
+    "img/finished/b9-800-544.jpg"
+    ]
+
+    const canvasBackgrndGrab = document.getElementById("canvas")
+    canvasBackgrndGrab.style= `background: url(${imgLocations[generateRand(0,11)]})`
+}
+
+
 
 
 const playerChanger = () => {
@@ -758,6 +778,8 @@ const gameLoop = () => {
     }
         
 }
+
+randomBackground()
 
 
 // we're going to do this when the content loads
