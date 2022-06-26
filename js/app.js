@@ -9,7 +9,6 @@
 // muzzle blast
 // stop clock
 // tank movement?
-// background changer
 // make canvasH / W get their values from HTML
 
 // Other needed:
@@ -73,6 +72,9 @@ let canvasW = 700
 const G = 9.8 
 
 let gameOverState = false
+
+let gameLoopEndID
+let localLoopId
 
 
 const realOrigin = [0,0]
@@ -358,37 +360,26 @@ const detectHit = () => {
         currentBullet.y <= currentTank.y + currentTank.height
 
     ){
+
+
+
             // ITS HITTING 3 TIMES??????
             if (Gplayer1Turn){
-                tank2.health -= 3
+                tank2.health -= 50
             } else if (Gplayer1Turn === false){
-                tank1.health -= 3
+                tank1.health -= 50
             }
             console.log('!!!!HIT!!!!!'+ new Date() );
-        }
+    }
+
+
+    if(tank1.health <= 0 || tank2.health <= 0){
+            gameOverState = true
+            console.log('GAME OVER!!!!!!!!!!!!');
+    }
         
-        
-        
 
-    // OLD
-    // if(currentBullet.x < currentTank.x + currentTank.width
-    // && currentBullet.x + currentBullet.width > currentTank.x
-    // && currentBullet.y < currentBullet.y + currentTank.height
-    // && currentBullet.y +  currentBullet.height > currentTank.y){
-
-    //     console.log('DETECTED HIT');
-
-    // }
-            // console.log('we have a hit') // testing
-
-            // here see if hit happens
-            // if ( currentTank.health < 32){
-            //     currentTank.show = false
-            // } else{ currentTank.health -= 33 }
 }
-
-
-
 
 
 // we use e (event)
@@ -537,7 +528,7 @@ const fireIt = () => {
     // LOOP KINDA WORKS. Have to stop it once its finished its fltTime
 
     
-    let timerID
+    // let timerID
 
 
     const fireItLocalLoop = () => { // why is this RUNNING CONSTANTLY
@@ -548,7 +539,7 @@ const fireIt = () => {
          console.log('in fireItLocalLoop:'+ new Date() );
     
         if (localIterator >= forLength / 3.5 ){  // 3.5 to try and cut down on playerchange time
-            clearInterval(timerID)
+            clearInterval(localLoopId)
             playerChanger()
             enableFireButton()
             console.log('Cleared fireItLocalLoop');
@@ -568,8 +559,6 @@ const fireIt = () => {
         const fireItIteratorAmount = 1
         localIterator = localIterator + fireItIteratorAmount
 
-        // FLIGHT TIME SHOULD BE OVER
-
     }
     
     
@@ -578,15 +567,15 @@ const fireIt = () => {
         console.log('in localCLock:'+ new Date() );
 
         
-        let intervalID = setInterval(fireItLocalLoop,frameLength)  // SEE THIS VALUE
-        console.log("intervalID:"+intervalID)
+        localLoopId = setInterval(fireItLocalLoop,frameLength)  // SEE THIS VALUE
+
     
-        timerID = intervalID
-        console.log("timerIDin:"+timerID)
+        // timerID = intervalID
+
     }
 
 
-clearInterval(timerID)
+clearInterval(localLoopId)
 
 localClock()  // something funky here and next line
 
@@ -646,6 +635,10 @@ class ItsOverEntity {
 
             ctx.fillStyle = this.color
             ctx.fillRect(this.x, this.y, this.width, this.height)
+            const tank = new Image()
+            tank.src= "images/tank.png"
+            tank.onload=()=>{
+            ctx.drawImage(tank, this.x, this.y) }
         }
     }
 }
@@ -754,7 +747,7 @@ const gameLoop = () => {
 
     if (bullet2.show) {
         bullet2.render()
-        detectHit()
+        // detectHit()
 
     }
 
@@ -774,7 +767,9 @@ const gameLoop = () => {
     tO.render()
 
     if(gameOverState){
-        clearInterval(clearID)
+        clearInterval(gameLoopEndID)
+        clearInterval(localLoopId)
+
     }
         
 }
@@ -787,5 +782,6 @@ document.addEventListener('DOMContentLoaded' , function () {
     // we need to have movement handler
 document.addEventListener('keydown',movementHandler)
 
-    let clearID = setInterval(gameLoop, frameLength)
+gameLoopEndID = setInterval(gameLoop, frameLength)
+
 })
