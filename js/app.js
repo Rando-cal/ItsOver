@@ -1,6 +1,7 @@
 // RANDY D'ABBRACCIO 6.24.2022 Copywrite
 
-// Need Functions:
+// TO DO:
+
 // tank explosion / coloring change   - prob need an new object like a bunch of triangles that change color...
 // ground explosion
 // turret motion **
@@ -9,9 +10,7 @@
 // stop clock
 // tank movement?
 // background changer
-
-// Variables needed:
-
+// make canvasH / W get their values from HTML
 
 // Other needed:
 // wash backgrounds
@@ -19,18 +18,20 @@
 // turret motion sounds
 // explsion sound
 // minimal viable tank visual ***
-// HIT DETECTION ****
+// make canvasH / W get their values from HTML
+
 
 
 // Broken:
 // make the FIRE button temporary disable work when shot is gone
-// Hit detect
-// WHERE the bullets are originating and whos turn it is
+// turn changer
 
 
 
 // Stretch:
-// 
+// Random hilly terrain
+// exploding terrain
+// other weapons
 
 
 /// HELPER FUNCTIONS
@@ -52,23 +53,8 @@ const downloadToFile = (content, filename, contentType) => {
 //#####################################################
 
 
-
-
-
-
-//####################
-
-
-
-
-
-// false is player2
-let Gplayer1Turn = false 
-
-let GlobalIterator = 0
-
-// let globalX = 0
-// let globalY = 0
+// false is player2's turn
+let Gplayer1Turn = true 
 
 let isCurrentTurnOverG = false
 
@@ -85,7 +71,6 @@ let frameLength = 20
 let canvasH = 500
 let canvasW = 700
 
-
 // setting gravity constant
 const G = 9.8 
 
@@ -95,33 +80,6 @@ let gameOverState = false
 const realOrigin = [0,0]
 const canvasOrigin = [0,500]
 
-// takes in 2 string x,y get array[x,y]
-const twoByStrToArray = (num1,num2) => {
-    const array = []
-    array.push(num1)
-    array.push(num2)
-    return array
-}
-
-const fourByStrToArray = (num1,num2,num3,num4) => {
-    const array = []
-    array.push(num1)
-    array.push(num2)
-    array.push(num3)
-    array.push(num4)
-    return array
-}
-
-const sixByStrToArray = (num1,num2,num3,num4,num5,num6) => {
-    const array = []
-    array.push(num1)
-    array.push(num2)
-    array.push(num3)
-    array.push(num4)
-    array.push(num5)
-    array.push(num6)
-    return array
-}
 
 twoByArraytoStr = (twoValueArray) =>{
     return [twoValueArray[0],twoValueArray[1]]
@@ -181,6 +139,11 @@ const showPowAng = () => {
     showPower()
 }
 
+let updateHealths = () => {
+    p1Health.innerText = `Player 1 Health: ${tank1.health}`
+    p2Health.innerText = `Player 2 Health: ${tank2.health}`
+}
+
 
 const playerChanger = () => {
     const pT = document.getElementById('playerTurn')
@@ -200,9 +163,11 @@ const disableFireButton = () => {
 }
 
 const enableFireButton = () => {
-    const fireButtonGrab2 = document.getElementById('fire')
-    fireButtonGrab2.disabled = 'false'
+    const fireButtonGrab3 = document.getElementById('fire')
+    fireButtonGrab3.removeAttribute('disabled')
 }
+
+
 
 const fiveSecFireDisable = () => {
     setTimeout(function(){document.getElementById("fire").disabled = false;},5000)
@@ -374,8 +339,12 @@ const detectHit = () => {
 
     ){
             // ITS HITTING 3 TIMES??????
-            window.alert('HIT')
-            console.log('HIT'+ new Date() );
+            if (Gplayer1Turn){
+                tank2.health -= 3
+            } else if (Gplayer1Turn === false){
+                tank1.health -= 3
+            }
+            console.log('!!!!HIT!!!!!'+ new Date() );
         }
         
         
@@ -506,6 +475,8 @@ const movementHandler = (e) => {
 // constructor(x, y, color, width, height, angle, power, show)
 const fireIt = () => {
 
+    disableFireButton()
+
     let localIterator = 0
 
     console.log('in FIREIT:'+ new Date() );
@@ -554,11 +525,12 @@ const fireIt = () => {
 
 
         // const fireButtonGrab2 = document.getElementById('fire')
-        console.log('in fireItLocalLoop:'+ new Date() );
+         console.log('in fireItLocalLoop:'+ new Date() );
     
-        if (localIterator >= forLength ){
+        if (localIterator >= forLength / 3.5 ){  // 3.5 to try and cut down on playerchange time
             clearInterval(timerID)
             playerChanger()
+            enableFireButton()
             console.log('Cleared fireItLocalLoop');
         }
         
@@ -593,19 +565,14 @@ const fireIt = () => {
         console.log("timerIDin:"+timerID)
     }
 
-    // currentTankAngle = null
-    // currentTankPower = null
-    // currentTankX     = null
-    // currentTankY     = null    
-
-
 
 clearInterval(timerID)
 
 localClock()  // something funky here and next line
 
 
-// playerChanger() // THIS CAUSED BULLET MIXING
+
+
 console.log('LEAVING Fireit');
 }
 
@@ -616,6 +583,7 @@ console.log('LEAVING Fireit');
 const game = document.getElementById('canvas')
 const angleDisplayGrab = document.getElementById('angle')
 const powerDisplayGrab = document.getElementById('power')
+
 
 const ctx = game.getContext('2d')
 
@@ -711,19 +679,18 @@ class TestObject {
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-// INIT OBJECTS
 
-
-
-// SOMETHING FUNKY HERE!!!!
 //       constructor(x, y, color, width, height, angle, power, show)   
 // ideally these values will come from the player and tanks settings
 
 let terrain = new Terrain(0, realYToCanvasY(30),'#784212',canvasW,realYToCanvasY(40),true)
 
+// let tank1 = new ItsOverEntity(tankPlacerX()[0], realYToCanvasY(40), 'green', 16, 10, 75, 80, true)  //!! set bullet Y here IN CANVAS XY,not real
+// let tank2 = new ItsOverEntity(tankPlacerX()[1], realYToCanvasY(40),   'red', 16, 10, 90, 80, true)
+
 // testing
-let tank1 = new ItsOverEntity(100, realYToCanvasY(40), 'green', 16, 10, 75, 80, true)  //!! set bullet Y here IN CANVAS XY,not real
-let tank2 = new ItsOverEntity(200, realYToCanvasY(40),   'red', 16, 10, 90, 80, true)
+let tank1 = new ItsOverEntity(40, realYToCanvasY(40), 'green', 16, 10, 78, 93, true)  //!! set bullet Y here IN CANVAS XY,not real
+let tank2 = new ItsOverEntity(400, realYToCanvasY(40),   'red', 16, 10, 105, 84, true)
 
 
 let bullet1 = new ItsOverEntity(tank1.x, tank1.y, 'white', 3, 3, tank1.angle, tank1.power, false)
@@ -740,6 +707,9 @@ fireButtonGrab.addEventListener('click',fireIt)
 const w3ButtonGrab = document.getElementById('weapon3button')
 w3ButtonGrab.addEventListener('click',showPowAng)
 
+let p1Health = document.getElementById('player1HealthDiv')
+let p2Health = document.getElementById('player2HealthDiv')
+
 
 //##############################################################################################################
 //#############################vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv#################################################
@@ -747,9 +717,10 @@ const gameLoop = () => {
 
 
     
-     ctx.clearRect(0,0,game.width,game.height)
+    ctx.clearRect(0,0,game.width,game.height)
 
     showPowAng()
+    updateHealths()
 
         // testing
         // ctx.fillStyle = "yellow"
@@ -758,11 +729,13 @@ const gameLoop = () => {
     if (bullet1.show) {
         bullet1.render()
         detectHit()
+
     } 
 
     if (bullet2.show) {
         bullet2.render()
         detectHit()
+
     }
 
     if (tank1.show) {
@@ -770,18 +743,19 @@ const gameLoop = () => {
     }
 
     if (tank2.show) {
-        tank2.render()
+        tank2.render()   // detecht hit WAS here but was doubling the damage
     }
 
-    if (tank1.show) {
-        detectHit() }
 
-    if (tank2.show) {
-        detectHit() }
+
 
     terrain.render()
 
     tO.render()
+
+    if(gameOverState){
+        clearInterval(clearID)
+    }
         
 }
 
@@ -789,7 +763,7 @@ const gameLoop = () => {
 // we're going to do this when the content loads
 document.addEventListener('DOMContentLoaded' , function () {
     // we need to have movement handler
-document.addEventListener('keydown',movementHandler) // FINSH*******
+document.addEventListener('keydown',movementHandler)
 
     let clearID = setInterval(gameLoop, frameLength)
 })
