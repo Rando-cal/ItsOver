@@ -6,58 +6,142 @@ html,body {
 
 body {
     padding-top: 1em;
-    text-align: center;
+    /* text-align: center; */
     background-color: rgb(66, 64, 64);
-    /* background-image: url('../img/dungeonhell.png'); */
     background-size: cover;
     background-repeat: space;
+    margin: 50px;
 }
 
 
-#topBar{
-
-}
-
-.weaponClass{
-    grid-area: top-right;
-}
-
-#container {
-    max-width: 50em;
-    /* height: 70vh; */
-    background-color: blue;
-    margin: 0 auto;
-    padding: 1em;
+#grid-container{
     display: grid;
-    grid-gap: .5em;
-    grid-template-rows: 10% 10% 10% 10% 10% 10% 10% 10% 10% 10% 10%;
-    grid-template-columns: 25% 25% 25% 25%;
+    width: 900px;
+    height: 700px;
+    margin: auto;
+    gap: 10px;
+    grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
+}
 
+
+#leftside{
+    grid-column: 2;
+    grid-row: 2;
+    grid-template-columns: subgrid;
+    grid-template-rows: subgrid;
+    justify-self: right;
+
+}
+
+
+#player1HealthDiv{
+    width: 200px;
+    height: 50px;
+    grid-row: 1;
+    grid-column: 1;
+    color:#37599e;
+    -webkit-text-stroke: 1px black;
+    font-size: large;
+}
+
+#player2HealthDiv{
+    width: 200px;
+    height: 50px;
+    grid-row: 1;
+    grid-column: 2;
+    color: orange;
+    -webkit-text-stroke: 1px black;
+    font-size: large;
 }
 
 canvas{
     background-color: rgb(141, 42, 111);
-    position: absolute;
-    top: 20%;
-    left: 17%;
+    grid-column: 3/7;
+    grid-row: 2;
     width: 700px;
     height: 500px;
-}
-
-#bottomBar{
-    grid-area: foot;
-
-}
-
-#startButton{
-    grid-area: btm-left;
-    
-}
-
-main {
-    grid-area: game;
+    margin: auto;
 }
 
 .meter{
     color: white;
+    height: 200px;
+    font-family: 'Bungee', cursive;
+    margin: 0px;
+    margin-top: 20px;
+    margin-bottom: 20px;
+
+}
+
+
+#startButton{
+    grid-row: 3;
+    grid-column: 1;
+    height: 50px;
+    width: 100px;
+    margin: auto;
+    font-family: 'Bungee', cursive;
+    border-radius: 12px;
+}
+
+
+#fire{
+    grid-column: 6;
+    width: 100px;
+    height: 70px;
+    border-radius: 12px;
+    font-family: 'Bungee', cursive;
+    align-self: end;
+}
+
+#power{
+height: 50px;
+height: 50px;
+width:200px;
+
+}
+
+#angle{
+    height: 50px;
+    width:200px;
+    
+}
+
+
+#playerTurn{
+    font-size: 3vh;
+    grid-column-start: 3;
+    grid-column-end: 4;
+    height: 50px;
+    align-self: end;
+    margin-bottom: 20px;
+    -webkit-text-stroke: 1px black;
+
+}
+
+
+/* .barcodefont{
+    font-family: 'Poiret One', cursive;
+
+    font-family: 'Poppins', sans-serif;
+
+    font-family: 'Source Sans Pro', sans-serif;
+} */
+
+
+#fun{
+    display: none;
+    background-color: rgb(66, 64, 64);
+}
+
+
+
+
+.bungefont{
+    font-family: 'Poiret One', cursive;
+
+    font-family: 'Poppins', sans-serif;
+
+    font-family: 'Source Sans Pro', sans-serif;
 }

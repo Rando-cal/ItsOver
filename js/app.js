@@ -35,7 +35,7 @@
 // exploding terrain
 // other weapons
 // add arrows in addition to wasd
-// ai player 2
+
 
 
 /// HELPER FUNCTIONS
@@ -64,6 +64,8 @@ let isCurrentTurnOverG = false
 
 let displayAngle = 45
 let displayPower = 55
+
+pT = document.getElementById('playerTurn')
 
 
 // @50 milisecond loop, there are 20 repeating loops in a second. So around 20 frames per second
@@ -112,7 +114,7 @@ const canvasYToRealY = (canvasY) => {  // STUPID  un-used parameter throwing NaN
     return y
 }
 
-
+// conversion real xy to canvas xy
 const realXYToCanvasXY = (realX,realY) => {
     const canvasY = canvasH - realY
     return [realX, canvasY]
@@ -126,18 +128,18 @@ const realYToCanvasY = (realYnum) => {
 // sets the display angle
 const showAngle = () => {
     if (Gplayer1Turn){
-        angleDisplayGrab.innerText = `Angle: ${tank1.angle}`
+        angleDisplayGrab.innerText = `Angle : ${tank1.angle}`
     } else {
-        angleDisplayGrab.innerText = `Angle: ${tank2.angle}`
+        angleDisplayGrab.innerText = `Angle : ${tank2.angle}`
     }
 }
 
 // sets the display power
 const showPower = () => {
     if (Gplayer1Turn){
-        powerDisplayGrab.innerText = `Power: ${tank1.power}`
+        powerDisplayGrab.innerText = `Power :  ${tank1.power}`
     } else {
-        powerDisplayGrab.innerText = `Power: ${tank2.power}`
+        powerDisplayGrab.innerText = `Power :  ${tank2.power}`
     }
 }
 
@@ -188,12 +190,11 @@ function randn_bm(min, max, skew) {
       num *= max - min // Stretch to fill range
       num += min // offset to min
     }
-    return num
+    return R(num)
 }
 
 
 const playerChanger = () => {
-    const pT = document.getElementById('playerTurn')
     
     if (Gplayer1Turn === true) {
         pT.innerText = "Player 2's Turn"
@@ -204,8 +205,6 @@ const playerChanger = () => {
     }
 }
 
-
-
 const disableFireButton = () => {
     const fireButtonGrab2 = document.getElementById('fire')
     fireButtonGrab2.disabled = 'true'
@@ -215,13 +214,6 @@ const enableFireButton = () => {
     const fireButtonGrab3 = document.getElementById('fire')
     fireButtonGrab3.removeAttribute('disabled')
 }
-
-
-
-const fiveSecFireDisable = () => {
-    setTimeout(function(){document.getElementById("fire").disabled = false;},5000)
-}
-
 
 
 // power 0 to 100 , can add height, in METERS. I"ll need a factor to bring numbers down. Like top power is 30 meters/s...
@@ -268,14 +260,7 @@ const angleToRadians = (angle) =>{
 
 
 
-
-
-
-// this is not RETURN THE CORRECT Y VALUES
 const makeBulTrajArray = (x,y,angle, power) => {
-
-// !!!! DO WE CARE IF IT DOESN"T KNOW THE BULLET?
-
 
     const bulletTrajArrayX = []
     const bulletTrajArrayY = []
@@ -345,7 +330,7 @@ const dumbAiPlayer = () => {
 }
 
 
-// check
+// check f()
 const findDistanceXY = () => {
     let d = Math.sqrt(        
         ((tank2.x-tank1.x)*(tank2.x-tank1.x))
@@ -356,7 +341,7 @@ const findDistanceXY = () => {
     return d
 }
 
-// check
+// check f()
 const findDistX = () => {
     return tank2.x - tank1.x
 }
@@ -377,8 +362,6 @@ const detectHit = () => {
 
     let currentBullet
     let currentTank    
-
-    // use x,y,width, height of our objects
 
     if (Gplayer1Turn){
         currentBullet = bullet1
@@ -443,15 +426,11 @@ const movementHandler = (e) => {
                     tank1.power = 99
                 }
                 tank1.power += 1
-
-                // needs break
                 break
             
 
                 case (68):
                 case (39):  
-
-
                 // deacreases angle
                 if (tank1.angle <=0 ){   // limits the angle to 180deg
                     tank1.angle = 0
@@ -474,7 +453,6 @@ const movementHandler = (e) => {
                 if (tank1.angle >= 180){   // limits the angle to 180deg
                     tank1.angle =180
                 } else (tank1.angle += 1)
-                
                 break
         }
 
@@ -548,20 +526,23 @@ const fireIt = () => {
         currentTankAngle = tank1.angle
         currentTankPower = tank1.power
         currentTankX     = tank1.x
-        currentTankY     = tank1.y  
+        currentTankY     = tank1.y
+        currentTankWidth = tank1.width  
 
     } else{
 
         currentTankAngle = tank2.angle
         currentTankPower = tank2.power
         currentTankX     = tank2.x
-        currentTankY     = tank2.y 
+        currentTankY     = tank2.y
+        currentTankWidth = 0
+
     }
 
 
-    let bulletTraj = makeBulTrajArray(currentTankX,canvasYToRealY(currentTankY),currentTankAngle, currentTankPower)
+    let bulletTraj = makeBulTrajArray(currentTankX + currentTankWidth,canvasYToRealY(currentTankY),currentTankAngle, currentTankPower)
 
-    let paraBolics = parabolicFunction(currentTankX,canvasYToRealY(currentTankY),currentTankAngle,currentTankPower, canvasYToRealY(currentTankY))
+    let paraBolics = parabolicFunction(currentTankX + currentTankWidth,canvasYToRealY(currentTankY),currentTankAngle,currentTankPower, canvasYToRealY(currentTankY))
 
 
     let fltTime = paraBolics[3]
@@ -570,8 +551,6 @@ const fireIt = () => {
     let factorQ = .001
     let forLength = fltTime / (frameLength * factorQ)   // this will also increase the forLength time, which impacts the loop termination time
     console.log("forLength:" +forLength);
-
-    // LOOP KINDA WORKS. Have to stop it once its finished its fltTime
 
     
     // let timerID
@@ -680,13 +659,13 @@ class TankEntity {
         this.render = function() {
             // here, we will se the fillstyle and the fillrect
 
-            // ctx.fillStyle = this.color
-            // ctx.fillRect(this.x, this.y, this.width, this.height)
+            ctx.fillStyle = this.color
+            ctx.fillRect(this.x, this.y, this.width, this.height)
 
-            const tank = new Image()
-            tank.src= "img/tank.png"
-            tank.onload=()=>{
-            ctx.drawImage(tank, this.x, this.y) }
+        //     const tank = new Image()
+        //     tank.src= "img/tank.png"
+        //     tank.onload=()=>{
+        //     ctx.drawImage(tank, this.x, this.y) }
         }
     }
 }
@@ -705,7 +684,6 @@ class TankEntityRFace {
         this.angle = angle,
         this.power = power, 
         this.show = show,
-        dumbAiPlayer
         this.health = 100
 
         // we can also add methods
@@ -713,13 +691,13 @@ class TankEntityRFace {
         this.render = function() {
             // here, we will se the fillstyle and the fillrect
 
-            // ctx.fillStyle = this.color
-            // ctx.fillRect(this.x, this.y, this.width, this.height)
+            ctx.fillStyle = this.color
+            ctx.fillRect(this.x, this.y, this.width, this.height)
 
-            const tank = new Image()
-            tank.src= "img/tankflip.png"
-            tank.onload=()=>{
-            ctx.drawImage(tank, this.x, this.y) }
+            // const tank = new Image()
+            // tank.src= "img/tankflip.png"
+            // tank.onload=()=>{
+            // ctx.drawImage(tank, this.x, this.y) }
         }
     }
 }
@@ -830,8 +808,8 @@ const fireButtonGrab = document.getElementById('fire')
 fireButtonGrab.addEventListener('click',fireIt)
 
 
-const w3ButtonGrab = document.getElementById('weapon3button')
-w3ButtonGrab.addEventListener('click',showPowAng)
+// const w3ButtonGrab = document.getElementById('weapon3button')
+// w3ButtonGrab.addEventListener('click',showPowAng)
 
 let p1Health = document.getElementById('player1HealthDiv')
 let p2Health = document.getElementById('player2HealthDiv')
@@ -845,6 +823,10 @@ const gameLoop = () => {
     
     ctx.clearRect(0,0,game.width,game.height)
 
+
+    if (Gplayer1Turn){
+        pT.style.color = "#37599e"
+    } else {pT.style.color = "orange"}
     showPowAng()
     updateHealths()
 
