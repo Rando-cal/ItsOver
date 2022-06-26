@@ -7,13 +7,15 @@
 // turret motion **
 // End game state ***
 // muzzle blast
-// stop clock
 // tank movement?
 // make canvasH / W get their values from HTML
 
+
+
+
 // Other needed:
-// wash backgrounds
-// fire sounds// clean up makkbullettraj array numbers. Too many negatives
+
+// fire sounds
 // turret motion sounds
 // explsion sound
 // minimal viable tank visual ***
@@ -21,14 +23,19 @@
 
 
 
+
 // Broken:
-// damage taken is detect-hitting multiple times and is not working correctly
+// Check collisions with Tank sprites
+
 
 
 // Stretch:
+
 // Random hilly terrain
 // exploding terrain
 // other weapons
+// add arrows in addition to wasd
+// ai player 2
 
 
 /// HELPER FUNCTIONS
@@ -149,7 +156,6 @@ const randomBackground = () => {
     "img/finished/b1-800x571.jpg",
     "img/finished/b2-800x576.jpg",
     "img/finished/b3-800x45x.jpg",
-    "img/finished/b10-800x540.jpg",
     "img/finished/b11-800x635.jpg",
     "img/finished/b12-800x555.jpg",
     "img/finished/b4-800x556.jpg",
@@ -165,6 +171,25 @@ const randomBackground = () => {
 }
 
 
+// use randn_bm(-500, 1000, 1)  : Add the min(absolute) + max. Divide by 2. Subtract that from max to get
+// from https://stackoverflow.com/questions/25582882/javascript-math-random-normal-distribution-gaussian-bell-curve
+function randn_bm(min, max, skew) {
+    let u = 0, v = 0;
+    while(u === 0) u = Math.random() //Converting [0,1) to (0,1)
+    while(v === 0) v = Math.random()
+    let num = Math.sqrt( -2.0 * Math.log( u ) ) * Math.cos( 2.0 * Math.PI * v )
+    
+    num = num / 10.0 + 0.5 // Translate to 0 -> 1
+    if (num > 1 || num < 0) 
+      num = randn_bm(min, max, skew) // resample between 0 and 1 if out of range
+    
+    else{
+      num = Math.pow(num, skew) // Skew
+      num *= max - min // Stretch to fill range
+      num += min // offset to min
+    }
+    return num
+}
 
 
 const playerChanger = () => {
@@ -178,6 +203,8 @@ const playerChanger = () => {
         pT.innerText = "Player 1's Turn"
     }
 }
+
+
 
 const disableFireButton = () => {
     const fireButtonGrab2 = document.getElementById('fire')
@@ -223,7 +250,7 @@ const parabolicFunction = (realX,realY,angle,power, height) => {
 }
 
 
-// give x coordinate given a time and velocity
+// give coordinates given a time and velocity and get X,Y. HEART OF THE PARABOLA
 const getX = (angle, power, newtime, timeInit, Xinit,) => {
     let x = Xinit + power * (newtime - timeInit) * Math.cos(angleToRadians(angle))
     return x
@@ -308,16 +335,33 @@ const tankPlacerX = () => {
     return [position1,position2]
 }
 
-    // SOLUTION??? get length of time for shot and set SHOW.true for that length,
-    //  then turn it off....  OR its okay to stop the 'clock'
-    //          ADD ITS OWN CLOCK with render???
+
+const dumbAiPlayer = () => {
+    if(Gplayer1Turn === false){
+        tank2.angle = randn_bm(90, 180, 1.3)
+        tank2.power = randn_bm(1, 100, .7)
+        fireButtonGrab.click()
+        }
+}
 
 
-    // approach - The Bullet is always there, it will get a new TRAJ values, and
-    //      render when needed
+// check
+const findDistanceXY = () => {
+    let d = Math.sqrt(        
+        ((tank2.x-tank1.x)*(tank2.x-tank1.x))
+        +
+        ((tank2.y-tank1.y)*(tank2.x-tank1.y))       
+    )
+
+    return d
+}
+
+// check
+const findDistX = () => {
+    return tank2.x - tank1.x
+}
 
 
-// STILL WONKY
 const detectHit = () => {
             // THIS WORKS FOR Mouse
             // yello ride side >= tank2 left side && mouse left side <= tank2 right side
@@ -363,7 +407,7 @@ const detectHit = () => {
 
 
 
-            // ITS HITTING 3 TIMES??????
+            // this was hitting due to all the detect hits in the main loop
             if (Gplayer1Turn){
                 tank2.health -= 50
             } else if (Gplayer1Turn === false){
@@ -375,7 +419,9 @@ const detectHit = () => {
 
     if(tank1.health <= 0 || tank2.health <= 0){
             gameOverState = true
+            console.log('==============================');
             console.log('GAME OVER!!!!!!!!!!!!');
+            console.log('==============================');
     }
         
 
@@ -531,12 +577,12 @@ const fireIt = () => {
     // let timerID
 
 
-    const fireItLocalLoop = () => { // why is this RUNNING CONSTANTLY
-
-
-
+    const fireItLocalLoop = () => { 
+        
         // const fireButtonGrab2 = document.getElementById('fire')
          console.log('in fireItLocalLoop:'+ new Date() );
+
+
     
         if (localIterator >= forLength / 3.5 ){  // 3.5 to try and cut down on playerchange time
             clearInterval(localLoopId)
@@ -568,6 +614,7 @@ const fireIt = () => {
 
         
         localLoopId = setInterval(fireItLocalLoop,frameLength)  // SEE THIS VALUE
+
 
     
         // timerID = intervalID
@@ -611,7 +658,73 @@ game.setAttribute('height',getComputedStyle(game)['height'])
 // })
 
 
-class ItsOverEntity {
+class TankEntity {
+
+    // attributes that are variable, go in the constructor function
+    constructor(x, y, color, width, height, angle, power, show) {
+
+        // define here: what the object will be made of
+        this.x = x,    
+        this.y = y,  // HAS TO STORE AS CANVAS Y, then convert when needed
+        this.color = color,
+        this.width = width,
+        this.height = height,
+        this.angle = angle,
+        this.power = power, 
+        this.show = show,
+
+        this.health = 100
+
+        // we can also add methods
+        // here our method will be render
+        this.render = function() {
+            // here, we will se the fillstyle and the fillrect
+
+            // ctx.fillStyle = this.color
+            // ctx.fillRect(this.x, this.y, this.width, this.height)
+
+            const tank = new Image()
+            tank.src= "img/tank.png"
+            tank.onload=()=>{
+            ctx.drawImage(tank, this.x, this.y) }
+        }
+    }
+}
+
+class TankEntityRFace {
+
+    // attributes that are variable, go in the constructor function
+    constructor(x, y, color, width, height, angle, power, show) {
+
+        // define here: what the object will be made of
+        this.x = x,    
+        this.y = y,  // HAS TO STORE AS CANVAS Y, then convert when needed
+        this.color = color,
+        this.width = width,
+        this.height = height,
+        this.angle = angle,
+        this.power = power, 
+        this.show = show,
+        dumbAiPlayer
+        this.health = 100
+
+        // we can also add methods
+        // here our method will be render
+        this.render = function() {
+            // here, we will se the fillstyle and the fillrect
+
+            // ctx.fillStyle = this.color
+            // ctx.fillRect(this.x, this.y, this.width, this.height)
+
+            const tank = new Image()
+            tank.src= "img/tankflip.png"
+            tank.onload=()=>{
+            ctx.drawImage(tank, this.x, this.y) }
+        }
+    }
+}
+
+class BulletEntity {
 
     // attributes that are variable, go in the constructor function
     constructor(x, y, color, width, height, angle, power, show) {
@@ -635,13 +748,13 @@ class ItsOverEntity {
 
             ctx.fillStyle = this.color
             ctx.fillRect(this.x, this.y, this.width, this.height)
-            const tank = new Image()
-            tank.src= "images/tank.png"
-            tank.onload=()=>{
-            ctx.drawImage(tank, this.x, this.y) }
+
         }
     }
 }
+
+
+
 
 class Terrain {
 
@@ -702,12 +815,12 @@ let terrain = new Terrain(0, realYToCanvasY(30),'#784212',canvasW,realYToCanvasY
 // let tank2 = new ItsOverEntity(tankPlacerX()[1], realYToCanvasY(40),   'red', 16, 10, 90, 80, true)
 
 // testing
-let tank1 = new ItsOverEntity(40, realYToCanvasY(40), 'green', 16, 10, 78, 93, true)  //!! set bullet Y here IN CANVAS XY,not real
-let tank2 = new ItsOverEntity(400, realYToCanvasY(40),   'red', 16, 10, 105, 84, true)
+let tank1 = new TankEntityRFace(tankPlacerX()[0], realYToCanvasY(40), 'green', 16, 10, 78, 93, true)  //!! set bullet Y here IN CANVAS XY,not real
+let tank2 = new TankEntity(tankPlacerX()[1], realYToCanvasY(40),   'red', 16, 10, 105, 84, true)
 
 
-let bullet1 = new ItsOverEntity(tank1.x, tank1.y, 'white', 3, 3, tank1.angle, tank1.power, false)
-let bullet2 = new ItsOverEntity(tank2.x, tank2.y, 'red', 3, 3, tank2.angle, tank2.power, false)
+let bullet1 = new BulletEntity(tank1.x, tank1.y, 'white', 3, 3, tank1.angle, tank1.power, false)
+let bullet2 = new BulletEntity(tank2.x, tank2.y, 'white', 3, 3, tank2.angle, tank2.power, false)
 
 
 let tO = new TestObject(tankPlacerX()[0], realYToCanvasY(40), 'black', 16, 10, 45, 50, true)
@@ -759,7 +872,7 @@ const gameLoop = () => {
         tank2.render()   // detecht hit WAS here but was doubling the damage
     }
 
-
+    dumbAiPlayer()
 
 
     terrain.render()
@@ -783,5 +896,6 @@ document.addEventListener('DOMContentLoaded' , function () {
 document.addEventListener('keydown',movementHandler)
 
 gameLoopEndID = setInterval(gameLoop, frameLength)
+
 
 })
