@@ -1,31 +1,17 @@
-// RANDY D'ABBRACCIO 6.24.2022 Copywrite
+// RANDY D'ABBRACCIO 6.24.2022 Copyright
 
 // TO DO:
 
-// tank explosion / coloring change   - prob need an new object like a bunch of triangles that change color...
-// ground explosion
-// turret motion **
-// End game state ***
-// muzzle blast
-// tank movement?
-// make canvasH / W get their values from HTML
-
-
-
-
 // Other needed:
 
-// fire sounds
 // turret motion sounds
-// explsion sound
 // minimal viable tank visual ***
 // make canvasH / W get their values from HTML
-
-
+// replace sounds
 
 
 // Broken:
-// Check collisions with Tank sprites
+
 
 
 
@@ -34,7 +20,14 @@
 // Random hilly terrain
 // exploding terrain
 // other weapons
-// add arrows in addition to wasd
+// add arrows buttons on screen in addition to wasd
+// tank explosion / coloring change   - prob need an new object like a bunch of triangles that change color...
+// turret motion **
+// End game state ***
+// muzzle blast
+// tank movement?
+// make canvasH / W get their values from HTML
+// adjust hit damage
 
 
 
@@ -88,6 +81,16 @@ let localLoopId
 
 const realOrigin = [0,0]
 const canvasOrigin = [0,500]
+
+
+let fireSound = document.createElement("audio");
+document.body.appendChild(fireSound);
+fireSound.setAttribute("src","sounds/fire2.wav")
+
+
+let hitSound = document.createElement("audio");
+document.body.appendChild(hitSound);
+hitSound.setAttribute("src","sounds/dead.wav")
 
 
 twoByArraytoStr = (twoValueArray) =>{
@@ -316,7 +319,7 @@ const tankPlacerX = () => {
     let firstHalfCanvas = [0,halfCanvas]
     let secondHalfCanvas = [halfCanvas,canvasW]
     let position1 = generateRand(firstHalfCanvas[0],firstHalfCanvas[1])
-    let position2 = generateRand(secondHalfCanvas[0],secondHalfCanvas[1])
+    let position2 = generateRand(secondHalfCanvas[0],secondHalfCanvas[1]-20)
     return [position1,position2]
 }
 
@@ -344,6 +347,15 @@ const findDistanceXY = () => {
 // check f()
 const findDistX = () => {
     return tank2.x - tank1.x
+}
+
+// reloads page when game is over and canvas is clicked
+const restartGame = (e) => {
+    if(gameOverState){
+        if(e.target.id === "canvas"){
+            location.reload()
+        }
+    }
 }
 
 
@@ -388,7 +400,7 @@ const detectHit = () => {
 
     ){
 
-
+        hitSound.play()
 
             // this was hitting due to all the detect hits in the main loop
             if (Gplayer1Turn){
@@ -411,8 +423,9 @@ const detectHit = () => {
             ctx.fillText("It's Over!", 230, 200);
             ctx.fillText("You Won", 239, 260)}
 
-            // const restartGrab = document.getElementById('restart')
-            // restartGrab.removeAttribute('disabled')
+            const restartMessage = document.getElementById('restartGameMessage')
+            restartMessage.style.display = "inline"
+    
     }
         
 
@@ -519,6 +532,7 @@ const movementHandler = (e) => {
 const fireIt = () => {
 
     disableFireButton()
+    fireSound.play()
 
     let localIterator = 0
 
@@ -614,8 +628,6 @@ clearInterval(localLoopId)
 localClock()  // something funky here and next line
 
 
-
-
 console.log('LEAVING Fireit');
 }
 
@@ -667,13 +679,13 @@ class TankEntity {
         this.render = function() {
             // here, we will se the fillstyle and the fillrect
 
-            ctx.fillStyle = this.color
-            ctx.fillRect(this.x, this.y, this.width, this.height)
+            // ctx.fillStyle = this.color
+            // ctx.fillRect(this.x, this.y, this.width, this.height)
 
-        //     const tank = new Image()
-        //     tank.src= "img/tank.png"
-        //     tank.onload=()=>{
-        //     ctx.drawImage(tank, this.x, this.y) }
+            const tank = new Image()
+            tank.src= "img/tank.png"
+            tank.onload=()=>{
+            ctx.drawImage(tank, this.x, this.y) }
         }
     }
 }
@@ -699,13 +711,13 @@ class TankEntityRFace {
         this.render = function() {
             // here, we will se the fillstyle and the fillrect
 
-            ctx.fillStyle = this.color
-            ctx.fillRect(this.x, this.y, this.width, this.height)
+            // ctx.fillStyle = this.color
+            // ctx.fillRect(this.x, this.y, this.width, this.height)
 
-            // const tank = new Image()
-            // tank.src= "img/tankflip.png"
-            // tank.onload=()=>{
-            // ctx.drawImage(tank, this.x, this.y) }
+            const tank = new Image()
+            tank.src= "img/tankflip.png"
+            tank.onload=()=>{
+            ctx.drawImage(tank, this.x, this.y) }
         }
     }
 }
@@ -738,8 +750,6 @@ class BulletEntity {
         }
     }
 }
-
-
 
 
 class Terrain {
@@ -778,9 +788,11 @@ class TestObject {
         this.render = function() {
             // here, we will se the fillstyle and the fillrect
 
-            ctx.fillStyle = this.color
-            // ctx.fillRect(x, y, color, width, height,show)
-            //roundedRect(ctx, 12, 12, 150, 150, 15);
+
+            ctx.rect(228, 223, 36, 19);
+            ctx.rect(240, 215, 10, 9);
+            
+        
         
         
         }
@@ -795,21 +807,17 @@ class TestObject {
 //       constructor(x, y, color, width, height, angle, power, show)   
 // ideally these values will come from the player and tanks settings
 
-let terrain = new Terrain(0, realYToCanvasY(30),'#784212',canvasW,realYToCanvasY(40),true)
+let terrain = new Terrain(0, realYToCanvasY(30),'#47321F',canvasW,realYToCanvasY(40),true)
 
-// let tank1 = new ItsOverEntity(tankPlacerX()[0], realYToCanvasY(40), 'green', 16, 10, 75, 80, true)  //!! set bullet Y here IN CANVAS XY,not real
-// let tank2 = new ItsOverEntity(tankPlacerX()[1], realYToCanvasY(40),   'red', 16, 10, 90, 80, true)
-
-// testing
-let tank1 = new TankEntityRFace(tankPlacerX()[0], realYToCanvasY(40), 'green', 16, 10, 78, 93, true)  //!! set bullet Y here IN CANVAS XY,not real
-let tank2 = new TankEntity(tankPlacerX()[1], realYToCanvasY(40),   'red', 16, 10, 105, 84, true)
+let tank1 = new TankEntityRFace(tankPlacerX()[0], realYToCanvasY(40), 'green', 27, 15, 78, 93, true)  //!! set bullet Y here IN CANVAS XY,not real
+let tank2 = new TankEntity(tankPlacerX()[1], realYToCanvasY(40),   'red', 27, 15, 105, 84, true)
 
 
 let bullet1 = new BulletEntity(tank1.x, tank1.y, 'white', 3, 3, tank1.angle, tank1.power, false)
 let bullet2 = new BulletEntity(tank2.x, tank2.y, 'white', 3, 3, tank2.angle, tank2.power, false)
 
 
-let tO = new TestObject(tankPlacerX()[0], realYToCanvasY(40), 'black', 16, 10, 45, 50, true)
+let tO = new TestObject(tankPlacerX()[0], realYToCanvasY(250), 'black', 16, 10, 45, 50, true)
 
 
 const fireButtonGrab = document.getElementById('fire')
@@ -852,7 +860,6 @@ const gameLoop = () => {
     if (bullet2.show) {
         bullet2.render()
         // detectHit()
-
     }
 
     if (tank1.show) {
@@ -868,7 +875,7 @@ const gameLoop = () => {
 
     terrain.render()
 
-    tO.render()
+    // tO.render() 
 
     if(gameOverState){
         clearInterval(gameLoopEndID)
@@ -881,10 +888,15 @@ const gameLoop = () => {
 randomBackground()
 
 
-// we're going to do this when the content loads
+
+
+// when content loads
 document.addEventListener('DOMContentLoaded' , function () {
-    // we need to have movement handler
-document.addEventListener('keydown',movementHandler)
+
+    //movement handler
+    document.addEventListener('keydown',movementHandler)
+
+    document.addEventListener('click', restartGame)
 
 gameLoopEndID = setInterval(gameLoop, frameLength)
 
