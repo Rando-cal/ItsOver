@@ -402,9 +402,17 @@ const detectHit = () => {
 
     if(tank1.health <= 0 || tank2.health <= 0){
             gameOverState = true
-            console.log('==============================');
-            console.log('GAME OVER!!!!!!!!!!!!');
-            console.log('==============================');
+            ctx.font = "50px Bungee";
+            if (tank1.health <= 0){
+                ctx.fillText("It's Over!", 230, 200);
+                ctx.fillText("You Lost", 239, 260);
+            } else{
+
+            ctx.fillText("It's Over!", 230, 200);
+            ctx.fillText("You Won", 239, 260)}
+
+            // const restartGrab = document.getElementById('restart')
+            // restartGrab.removeAttribute('disabled')
     }
         
 
@@ -827,6 +835,7 @@ const gameLoop = () => {
     if (Gplayer1Turn){
         pT.style.color = "#37599e"
     } else {pT.style.color = "orange"}
+
     showPowAng()
     updateHealths()
 
